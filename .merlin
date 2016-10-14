@@ -1,0 +1,23 @@
+S src/common/config/
+S src/common/utils/
+S src/common/ 
+S src/engine/
+S src/interface/gui/
+S src/interface/amaze/
+S src/interface/
+S src/music/
+S src/script/
+
+B _build/src/common/config/
+B _build/src/common/utils/
+B _build/src/common/ 
+B _build/src/engine/
+B _build/src/interface/gui/
+B _build/src/interface/amaze/
+B _build/src/interface/
+B _build/src/music/
+B _build/src/script/
+
+PKG ogaml.graphics
+
+

@@ -72,9 +72,6 @@ Makefile
 *_v.ml
 *_v.mli
 
-# merlin config file
-.merlin
-
 # settings local file
 settings.json
 settings_engine.json
