@@ -66,6 +66,14 @@ let renderer = object(self)
       ~color
       ~uv:Vector2f.({x = texture_rect.xmax; y = texture_rect.ymax}) ())
     << (SimpleVertex.create
+      ~position:(Vector3f.lift real_pos)
+      ~color
+      ~uv:Vector2f.({x = texture_rect.xmin; y = texture_rect.ymin}) ())
+    << (SimpleVertex.create
+      ~position:(Vector3f.lift (Vector2f.add real_pos real_end))
+      ~color
+      ~uv:Vector2f.({x = texture_rect.xmax; y = texture_rect.ymax}) ())
+    << (SimpleVertex.create
       ~position:(Vector3f.lift ({x = real_pos.x; y = real_pos.y +. real_end.y}))
       ~color
       ~uv:Vector2f.({x = texture_rect.xmin; y = texture_rect.ymax}) ())
@@ -263,7 +271,8 @@ let renderer = object(self)
       ~vertices:vao 
       ~program 
       ~parameters
-      ~uniform ();
+      ~uniform 
+      ~mode:DrawMode.Triangles ();
     VertexArray.VertexSource.clear tileset#source;
     let vao = 
       VertexArray.static (module Window) target jointset#source
@@ -279,7 +288,8 @@ let renderer = object(self)
       ~vertices:vao 
       ~program 
       ~parameters
-      ~uniform ();
+      ~uniform
+      ~mode:DrawMode.Triangles ();
     VertexArray.VertexSource.clear jointset#source
 
   (* Render a path with arrows *)
@@ -289,9 +299,9 @@ let renderer = object(self)
     let angle s t =
       match Position.diff t s with
         | pos when pos = Position.create (1,0)  -> 0.
-        | pos when pos = Position.create (0,1)  -> 90.
-        | pos when pos = Position.create (-1,0) -> 180.
-        | pos when pos = Position.create (0,-1) -> -90.
+        | pos when pos = Position.create (0,1)  -> Constants.pi2
+        | pos when pos = Position.create (-1,0) -> Constants.pi
+        | pos when pos = Position.create (0,-1) -> -. Constants.pi2
         | _ -> failwith "Not continuous path"
     in
     let rec aux prev = function
@@ -300,11 +310,11 @@ let renderer = object(self)
         let ap = angle pos prev
         and an = angle pos next in
         let (amax,amin) = if an > ap then (an,ap) else (ap,an) in
-        if amax = amin +. 180. then
+        if amax = amin +. Constants.pi then
           draw "arrow_straight" pos ~rotation:ap ()
         else begin
-          if amax = amin +. 270. then
-            draw "arrow_corner" pos ~rotation:270. ()
+          if amax = amin +. (3. *. Constants.pi4) then
+            draw "arrow_corner" pos ~rotation:(3. *. Constants.pi4) ()
           else
             draw "arrow_corner" pos ~rotation:amax ()
         end ;
