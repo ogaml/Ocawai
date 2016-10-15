@@ -23,11 +23,19 @@ class virtual setter pos name = object(self)
       else if has_focus then Color.(`RGB RGB.{ r = 0.9 ; g = 0.94 ; b = 0.95 ; a = 1. })
       else Color.(`RGB RGB.white)
     in
-    (* new rectangle_shape ~fill_color:bg_color
-      ~size:(setter_width,setter_height) ~position:self#position
-      ~origin:(setter_width/.2.,setter_height/.2.)
-      ()
-    |> target#draw ; *)
+    let shape =
+      let position =
+        let (x,y) = self#position in OgamlMath.Vector2f.({ x ; y })
+      in
+      let size =
+        OgamlMath.Vector2f.({ x = setting_width ; y = setter_height })
+      in
+      let origin =
+        OgamlMath.Vector2f.({ x = setting_width/.2. ; y = setter_height/.2.})
+      in
+      Shape.create_rectangle ~position ~size ~color:bg_color ~origin ()
+    in
+    Shape.draw (module Window) target shape () ;
 
     rect_print (module Window)
       target name font
@@ -56,15 +64,22 @@ class slider ?default:(default = 50) pos update name = object(self)
 
     super_set#draw target ;
     (* First we have a line for the slider *)
-    (* let color = Color.rgb 57 131 204 in
-    new rectangle_shape ~fill_color:color
-      ~size:(slider_w,slider_h)
-      ~origin:(slider_w /. 2., slider_h /. 2.)
-      ~position:(addf2D self#position ((setter_width -. setting_width) /. 2., 0.))
-      ()
-    |> target#draw ;
+    let color = Color.(`RGB RGB.({ r = 0.22 ; g = 0.51 ; b = 0.8 ; a = 1. })) in
+    let shape =
+      let position, size, origin =
+      OgamlMath.Vector2f.(
+        let (x,y) =
+          addf2D self#position ((setter_width -. setting_width) /. 2., 0.)
+        in
+        { x ; y },
+        { x = slider_w ; y = slider_h },
+        { x = slider_w /. 2. ; y = slider_h /. 2. }
+      ) in
+      Shape.create_rectangle ~position ~origin ~size ~color ()
+    in
+    Shape.draw (module Window) target shape () ;
     (* Then we draw the cursor *)
-    let offset = (slider_w /. 100.) *. (float_of_int (percentage - 50)) in
+    (* let offset = (slider_w /. 100.) *. (float_of_int (percentage - 50)) in
     let position =
       addf2D self#position
              ((setter_width -. setting_width) /. 2. +. offset, 0.) in
