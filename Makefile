@@ -20,7 +20,7 @@ ATD_FILES=$(ATD_TML) $(ATD_TMLI) $(ATD_JML) $(ATD_JMLI) $(ATD_VML) $(ATD_VMLI)
 
 
 default: $(ATD_ML)
-	ocamlbuild -use-ocamlfind -tag thread -package ogaml.graphics,yojson,atdgen -Is $(DIRS) main.native
+	ocamlbuild -use-ocamlfind -use-menhir -tag thread -package ogaml.graphics,yojson,atdgen -Is $(DIRS) main.native
 
 %_t.ml:%.atd
 	atdgen -t $<
