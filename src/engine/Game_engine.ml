@@ -115,7 +115,7 @@ class game_engine () = object (self)
       self#notify_players;
       (players, map)
 
-  method init_net port nbplayers =
+  (*method init_net port nbplayers =
       let connections = Network_tool.open_n_connections port nbplayers in
       let player_list =
         List.map (fun x -> new NetPlayer.netPlayer x) connections
@@ -146,7 +146,7 @@ class game_engine () = object (self)
         )
         players ;
       actual_player_l <- actual_player_list nbplayers;
-      ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
+      ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)*)
 
   method private player_of_unit u =
     let rec aux = function
