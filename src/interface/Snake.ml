@@ -98,9 +98,9 @@ class state = object(self)
     let angle s t =
       match Position.diff t s with
         | pos when pos = Position.create (1,0)  -> 0.
-        | pos when pos = Position.create (0,1)  -> 90.
-        | pos when pos = Position.create (-1,0) -> 180.
-        | pos when pos = Position.create (0,-1) -> -90.
+        | pos when pos = Position.create (0,1)  -> Constants.pi2
+        | pos when pos = Position.create (-1,0) -> Constants.pi
+        | pos when pos = Position.create (0,-1) -> -. Constants.pi2
         | _ -> failwith "Not continuous path"
     in
     let rec aux prev = function
@@ -109,11 +109,11 @@ class state = object(self)
         let ap = angle pos prev
         and an = angle pos next in
         let (amax,amin) = if an > ap then (an,ap) else (ap,an) in
-        if amax = amin +. 180. then
+        if amax = amin +. Constants.pi then
           draw pos ap "arrow_straight"
         else begin
-          if amax = amin +. 270. then
-            draw pos 270. "arrow_corner"
+          if amax = amin +. (3. *. Constants.pi2) then
+            draw pos (3. *. Constants.pi2) "arrow_corner"
           else
             draw pos amax "arrow_corner"
         end ;

@@ -313,8 +313,8 @@ let renderer = object(self)
         if amax = amin +. Constants.pi then
           draw "arrow_straight" pos ~rotation:ap ()
         else begin
-          if amax = amin +. (3. *. Constants.pi4) then
-            draw "arrow_corner" pos ~rotation:(3. *. Constants.pi4) ()
+          if amax = amin +. (3. *. Constants.pi2) then
+            draw "arrow_corner" pos ~rotation:(3. *. Constants.pi2) ()
           else
             draw "arrow_corner" pos ~rotation:amax ()
         end ;
