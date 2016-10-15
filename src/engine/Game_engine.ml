@@ -2,7 +2,9 @@ open Action
 open Settings_t
 open Settings_engine_t
 
-module Log = Log.Make (struct let section = "Engine" end)
+let info fmt = OgamlUtils.(Log.info Log.stdout ("%s" ^^ fmt) "Engine : ")
+let error fmt = OgamlUtils.(Log.error Log.stdout ("%s" ^^ fmt) "Engine : ")
+let debug fmt = OgamlUtils.(Log.debug Log.stdout ("%s" ^^ fmt) "Engine : ")
 
 let get_opt o =
   match o with
@@ -164,7 +166,7 @@ class game_engine () = object (self)
     )
 
   method run : unit =
-    Log.info "One step (%d)..." self#actual_player ;
+    info "One step (%d)..." self#actual_player ;
     let player = players.(self#actual_player) in
 
     let next_wanted_action = player#get_next_action in
@@ -239,13 +241,13 @@ class game_engine () = object (self)
              players.(self#actual_player)#update (Types.You_win);
              players.(enemy_id)#update (Types.Game_over)
             )
-        else self#run 
+        else self#run
         )
     else if List.length actual_player_l = 1 then begin
       is_over <- true;
       players.(self#actual_player)#update (Types.You_win)
     end else if killed then ()
-    else self#run 
+    else self#run
 
   (* Capture buildings at the beginning of a turn *)
   method private capture_buildings =
@@ -304,9 +306,9 @@ class game_engine () = object (self)
       self#notify_players
     )
 
-  method private notify_players = 
-    let player = players.(self#actual_player) in 
-      
+  method private notify_players =
+    let player = players.(self#actual_player) in
+
     (* Notify the player *)
     player#update Types.Your_turn;
 

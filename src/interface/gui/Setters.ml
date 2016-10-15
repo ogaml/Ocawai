@@ -29,12 +29,15 @@ class virtual setter pos name = object(self)
       ()
     |> target#draw ; *)
 
-    rect_print
-      target name font (Color.rgb 64 64 64) (Pix 20) (Pix 2) Left {
-        left = fst self#position +. 20. -. 400. ;
-        top = snd self#position +. 10. -. 20. ;
+    rect_print (module Window)
+      target name font
+      (Color.(`RGB RGB.({ r = 0.25 ; g = 0.25 ; b = 0.25 ; a = 1. })))
+      (Pix 20) (Pix 2) Left OgamlMath.FloatRect.({
+        x = fst self#position +. 20. -. 400. ;
+        y = snd self#position +. 10. -. 20. ;
         width = setter_width -. setting_width -. 4. ;
-        height = setter_height }
+        height = setter_height
+      })
 
 end
 
