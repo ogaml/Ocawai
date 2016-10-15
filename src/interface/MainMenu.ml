@@ -99,7 +99,7 @@ class main_menu = object(self)
 
     Event.(
       match e with
-        | Resized size -> self#set_screen size
+        | Resized size -> self#set_screen (Window.size manager#window)
         | KeyPressed { KeyEvent.key = kc ; _ } ->
             screen#handle_key kc 
         | _ -> ()
