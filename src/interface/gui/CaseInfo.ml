@@ -10,7 +10,7 @@ let height = 150.
 
 class case_info = object(self)
 
-  method draw : (module RenderTarget.T with type t = 'a) -> 'a ->
+  method draw : 'a. (module RenderTarget.T with type t = 'a) -> 'a ->
                 (string -> (float * float) -> unit) ->
                 (string -> (float * float) -> unit) ->
                 (int * int) option ->

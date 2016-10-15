@@ -153,9 +153,10 @@ class minimap def width height = object(self)
   (* val vao = new vertex_array ~primitive_type:Quads [] *)
   (* TODO *)
 
-  method draw : (module RenderTarget.T with type t = 'a) -> 'a ->
+  method draw : 'a. (module RenderTarget.T with type t = 'a) -> 'a ->
                 Cursor.cursor -> unit =
-    fun target cursor ->
+    fun (type s) (module M : RenderTarget.T with type t = s)
+        (target : s) cursor ->
     let foi = float_of_int in
     let ratio = 200. /. (foi def) in
     (* self#add_rectangle vao (4.,4.) (208.,208.) (Color.rgb 200 200 200);
