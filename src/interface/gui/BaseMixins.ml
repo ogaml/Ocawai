@@ -99,21 +99,32 @@ class virtual has_toolbar = object(self)
 
   method draw target lib =
     let position = foi2D (sub2D self#position (2, toolbar_height)) in
-    (* new rectangle_shape ~position ~size:(foi2D (fst size + 4, toolbar_height))
-      ~fill_color:theme.Theme.bar_color ()
-    |> target#draw;
+    let position =
+      let (x,y) = position in OgamlMath.Vector2f.({ x ; y })
+    in
+    let shape =
+      let size = foi2D (fst size + 4, toolbar_height) in
+      let size = let (x,y) = size in OgamlMath.Vector2f.({ x ; y }) in
+      Shape.create_rectangle
+        ~position ~size
+        ~color:theme.Theme.bar_color ()
+    in
+    Shape.draw (module Window) target shape () ;
     let th = float_of_int toolbar_height in
-    Render.renderer#draw_txr target toolbar_icon ~position ~size:(th, th) ~centered:false ();
-    let (posx,posy) = position in
-    let (sx,sy) = foi2D (fst size, toolbar_height) in
-    rect_print
-      target toolbar_text bold_font Color.white (Pix (toolbar_height - 3))
-        (Pix 2) Left {
-          left = posx +. th ;
-          top = posy ;
-          width = sx -. th ;
-          height = sy } *)
-    (* TODO *)
-    ()
+    let size = OgamlMath.Vector2f.({ x = th ; y = th }) in
+    Render.renderer#draw_txr
+      target toolbar_icon ~position ~size ~centered:false () ;
+    let (sx,sy) =
+      foi2D (int_of_float OgamlMath.Vector2f.(size.x), toolbar_height)
+    in
+    let (px,py) = OgamlMath.Vector2f.(position.x, position.y) in
+    rect_print (module Window)
+      target toolbar_text bold_font Color.(`RGB RGB.white)
+      (Pix (toolbar_height - 3)) (Pix 2) Left OgamlMath.FloatRect.({
+        x = px +. th ;
+        y = py ;
+        width = sx -. th ;
+        height = sy
+      })
 
 end
