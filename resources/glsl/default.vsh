@@ -11,8 +11,8 @@ out vec2 frag_uv;
 
 void main() {
 
-  gl_Position.x = (2.0 * position.x) / win_size.x;
-  gl_Position.y = - (2.0 * position.y) / win_size.y;
+  gl_Position.x = (2.0 * position.x) / win_size.x - 1.0;
+  gl_Position.y = 1.0 - (2.0 * position.y) / win_size.y;
   gl_Position.z = 0.0;
   gl_Position.w = 1.0;
 
