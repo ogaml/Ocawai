@@ -5,12 +5,9 @@ let get_option o =
 
 class client_data = object(self)
 
-  val mutable minimap = None
-    (*new Minimap.minimap 30
-    (fst (Battlefield.size map))
-    (snd (Battlefield.size map))*)
+  val mutable minimap = None 
 
-  val case_info = new CaseInfo.case_info
+  val case_info = new CaseInfo.case_info 
 
   val updates : Types.update Queue.t = Queue.create ()
 
@@ -57,9 +54,9 @@ class client_data = object(self)
 
   method camera = get_option camera
 
-  method minimap = get_option minimap
+  method minimap = get_option minimap 
 
-  method case_info = case_info
+  method case_info = case_info 
 
   method players = players
 

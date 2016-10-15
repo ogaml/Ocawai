@@ -14,10 +14,20 @@ let renderer = object(self)
 
   val mutable rect_source = VertexArray.VertexSource.empty () 
 
+  val mutable program = Obj.magic ()
+
   method init win =
     let folder = (Utils.base_path ()) ^ "textures/" in
     TextureLibrary.load_directory win texture_library (folder);
-    TilesetLibrary.load_directory win tileset_library (folder)
+    TilesetLibrary.load_directory win tileset_library (folder);
+    program <- 
+      Program.from_source_pp 
+        (module Window) 
+        ~context:win
+        ~log:Log.stdout
+        ~vertex_source:(`File "resources/glsl/default.vsh")
+        ~fragment_source:(`File "resources/glsl/default.fsh") ()
+
 
   (* Returns true iff p is in the map *)
   method private filter_positions map p =
@@ -29,101 +39,137 @@ let renderer = object(self)
 
   (* Draw a tile from a set, using a VAO *)
   method private draw_tile set tilename
-    ?position:(position = (0.,0.))
-    ?scale:(scale = 1.,1.)
-    ?color:(color = Color.rgb 255 255 255)
-    ?origin:(origin = 0.,0.) () =
-    let vao = set#vao in
+    ?position:(position = Vector2f.zero)
+    ?scale:(scale = Vector2f.({x = 1.; y = 1.}))
+    ?color:(color = `RGB Color.RGB.white)
+    ?origin:(origin = Vector2f.zero) () =
+    let open Vector2f in
+    let source = set#source in
     let tex_size = float_of_int set#tile_size in
-    let new_origin = (fst scale *. fst origin, snd scale *. snd origin) in
-    let real_pos = Utils.subf2D position new_origin in
-    let real_end = (fst scale *. tex_size, snd scale *. tex_size) in
+    let new_origin = {x = scale.x *. origin.x; y = scale.y *. origin.y} in
+    let real_pos = Vector2f.sub position new_origin in
+    let real_end = Vector2f.prop tex_size scale in
     let texture_rect = set#texture_rect tilename in
-    vao#append (mk_vertex
-      ~position:real_pos
+    let open VertexArray in
+    let open VertexSource in
+    source
+    << (SimpleVertex.create
+      ~position:(Vector3f.lift real_pos)
       ~color
-      ~tex_coords:(texture_rect.xmin, texture_rect.ymin) ());
-    vao#append (mk_vertex
-      ~position:(addf2D real_pos (fst real_end, 0.))
+      ~uv:Vector2f.({x = texture_rect.xmin; y = texture_rect.ymin}) ())
+    << (SimpleVertex.create
+      ~position:(Vector3f.lift ({x = real_pos.x +. real_end.x; y = real_pos.y}))
       ~color
-      ~tex_coords:(texture_rect.xmax, texture_rect.ymin) ());
-    vao#append (mk_vertex
-      ~position:(addf2D real_pos real_end)
+      ~uv:Vector2f.({x = texture_rect.xmax; y = texture_rect.ymin}) ())
+    << (SimpleVertex.create
+      ~position:(Vector3f.lift (Vector2f.add real_pos real_end))
       ~color
-      ~tex_coords:(texture_rect.xmax, texture_rect.ymax) ());
-    vao#append (mk_vertex
-      ~position:(addf2D real_pos (0., snd real_end))
+      ~uv:Vector2f.({x = texture_rect.xmax; y = texture_rect.ymax}) ())
+    << (SimpleVertex.create
+      ~position:(Vector3f.lift ({x = real_pos.x; y = real_pos.y +. real_end.y}))
       ~color
-      ~tex_coords:(texture_rect.xmin, texture_rect.ymax) ())
+      ~uv:Vector2f.({x = texture_rect.xmin; y = texture_rect.ymax}) ())
+    |> ignore
 
-  method draw_direct_tile (target : render_window) (set : Tileset.tileset)
+  method draw_direct_tile (target : Window.t) (set : Tileset.tileset)
     tilename ?position ?rotation ?scale
-    ?color ?origin () =
+    ?color ?origin () : unit =
     let texture_rect = set#int_rect tilename in
-    let spr = new sprite ~texture:set#texture ?position ?rotation
-      ?scale ?color ?origin ~texture_rect () in
-    target#draw spr
+    let spr = 
+      Sprite.create 
+        ~texture:set#texture 
+        ?position 
+        ?rotation
+        ?scale 
+        ?origin 
+        ~subrect:texture_rect () 
+    in
+    Sprite.draw (module Window) ~target ~sprite:spr ()
 
   (* Draw a texture *)
-  method draw_txr (target : render_window) name
+  method draw_txr (target : Window.t) name
     ?position
     ?rotation
-    ?scale:(scale = (1.,1.))
+    ?scale:(scale = Vector2f.({x = 1.; y = 1.}))
     ?size
     ?color
     ?centered:(centered = true)
-    ?blend_mode () =
+    ?blend_mode () : unit =
     let texture = TextureLibrary.get_texture texture_library name in
-    let (sx,sy) =  foi2D texture#get_size in
+    let tsize =  Vector2f.from_int (Texture.Texture2D.size texture) in
     let origin  =
-      if centered then (sx/.2.,sy/.2.)
-      else (0.,0.)
+      if centered then Vector2f.prop 0.5 tsize
+      else Vector2f.zero
     in
     let scale   =
       match size with
       |None -> scale
       |Some(s) ->
-        let scalem  = (fst s /. sx, snd s /. sy) in
-        (fst scale *. fst scalem, snd scale *. snd scalem)
+        let scalem  = Vector2f.({x = s.x /. tsize.x; y = s.y /. tsize.y}) in
+        Vector2f.({x = scale.x *. scalem.x; y = scale.y *. scalem.y})
     in
-    new sprite ~origin ?position ?rotation ~texture ~scale ?color ()
-    |> target#draw ?blend_mode
+    let sprite = 
+      Sprite.create
+        ~origin 
+        ?position 
+        ?rotation 
+        ~texture 
+        ~scale 
+        ()
+    in
+    let parameters = 
+      DrawParameter.(make 
+        ~culling:CullingMode.CullNone
+        ~depth_test:DepthTest.None
+        ~depth_write:false
+        ?blend_mode
+        ()
+      )
+    in
+    Sprite.draw (module Window) ~target ~sprite ~parameters ()
 
 
   (* Draw a sprite from a map position and an offset *)
   method private draw_from_map
-    (target : render_window) camera name position
+    (target : Window.t) camera name position
     ?rotation
-    ?offset:(offset = (0.,0.))
-    ?scale:(scale = (1.,1.))
+    ?offset:(offset = Vector2f.zero)
+    ?scale:(scale = Vector2f.({x = 1.; y = 1.}))
     ?blend_mode
-    ?color () =
-    let (ox,oy) = offset in
-    let position = addf2D
-      (foi2D (camera#project position))
-      (ox *. camera#zoom, oy *. camera#zoom)
+    ?color () : unit =
+    let (x,y) = camera#project position in
+    let position = 
+      Vector2f.add
+        (Vector2f.from_int Vector2i.({x;y}))
+        (Vector2f.prop camera#zoom offset)
     in
-    let scale = (fst scale *. camera#zoom, snd scale *. camera#zoom) in
+    let scale = 
+      Vector2f.prop camera#zoom scale
+    in 
     self#draw_txr target name ~position ?color
       ?rotation ~scale ?blend_mode ()
 
   (* Draw a tile from a map position and an offset *)
   method private draw_tile_from_map camera set name position
-    ?offset:(offset = (0.,0.))
-    ?scale:(scale = (1.,1.))
-    ?color () =
-    let position = addf2D
-      (foi2D (camera#project position))
-      ((fst offset) *. camera#zoom, (snd offset) *. camera#zoom)
+    ?offset:(offset = Vector2f.zero)
+    ?scale:(scale = Vector2f.({x = 1.; y = 1.}))
+    ?color () : unit =
+    let (x,y) = camera#project position in
+    let position = 
+      Vector2f.add
+        (Vector2f.from_int Vector2i.({x;y}))
+        (Vector2f.prop camera#zoom offset)
     in
     let o = float_of_int set#tile_size /. 2. in
-    let scale = (fst scale *. camera#zoom, snd scale *. camera#zoom) in
-    self#draw_tile set name ~position ?color ~scale ~origin:(o,o) ()
+    let scale = 
+      Vector2f.prop camera#zoom scale
+    in 
+    self#draw_tile set name ~position ?color ~scale ~origin:Vector2f.({x = o; y = o}) ()
 
   (* Render the joints *)
   method private render_joints camera jointset pos texture_name map =
     (* Utility *)
-    let draw_v = self#draw_tile_from_map camera jointset ~offset:(0.,-2.) in
+    let draw_v = self#draw_tile_from_map camera jointset ~offset:Vector2f.({x = 0.; y = -2.}) in
     let draw_h = self#draw_tile_from_map camera jointset in
     (* Hardcode for testing *)
     (* Let's draw the junction *)
@@ -158,33 +204,33 @@ let renderer = object(self)
     begin
       let leftname = Tile.get_name (Battlefield.get_tile map left) in
       if is_water texture_name && is_ground leftname then
-        draw_h ~offset:(2.,0.) "water_ground_hr" left ()
+        draw_h ~offset:Vector2f.({x = 2.; y = 0.}) "water_ground_hr" left ()
       else if is_ground texture_name && is_water leftname then
-        draw_h ~offset:(-2.,0.) "water_ground_h" pos ()
+        draw_h ~offset:Vector2f.({x = -2.; y = 0.}) "water_ground_h" pos ()
       else if is_beach texture_name && is_ground leftname then
-        draw_h ~offset:(2.,0.) "beach_ground_hr" left ()
+        draw_h ~offset:Vector2f.({x = 2.; y = 0.}) "beach_ground_hr" left ()
       else if is_ground texture_name && is_beach leftname then
-        draw_h ~offset:(-2.,0.) "beach_ground_h" pos ()
+        draw_h ~offset:Vector2f.({x = -2.; y = 0.}) "beach_ground_h" pos ()
       else if is_water texture_name && is_beach leftname then
-        draw_h ~offset:(2.,0.) "water_beach_hr" left ()
+        draw_h ~offset:Vector2f.({x = 2.; y = 0.}) "water_beach_hr" left ()
       else if is_beach texture_name && is_water leftname then
-        draw_h ~offset:(-2.,0.) "water_beach_h" pos ()
+        draw_h ~offset:Vector2f.({x = -2.; y = 0.}) "water_beach_h" pos ()
     end
 
   (* Highlight a tile *)
-  method private highlight_tile (target : render_window)
+  method private highlight_tile (target : Window.t)
     camera base_color pos =
-    let (r,g,b,a) = Color.(
+    let (r,g,b,a) = Color.RGB.(
       base_color.r, base_color.g, base_color.b,
-      float_of_int (base_color.a)) in
+      base_color.a) in
     let multiplier = sin (Unix.gettimeofday () *. 2.) +. 2. in
-    let alpha = int_of_float ((multiplier /. 3.) *. a) in
+    let alpha = ((multiplier /. 3.) *. a) in
     self#draw_from_map target camera "highlight" pos
-      ~color:(Color.rgba r g b alpha)
-      ~blend_mode:BlendAdd ()
+      ~color:(`RGB Color.RGB.({r; g; b; a = alpha}))
+      ~blend_mode:DrawParameter.BlendMode.additive ()
 
   (* Render the whole map (also draws the tile VAO) *)
-  method private render_map (target : render_window)
+  method private render_map (target : Window.t)
     camera (map : Battlefield.t) =
     let tileset = TilesetLibrary.get_tileset tileset_library "tileset" in
     let jointset = TilesetLibrary.get_tileset tileset_library "tilejoints" in
@@ -195,13 +241,49 @@ let renderer = object(self)
     List.iter
       (fun p -> render_tile (Tile.get_name (Battlefield.get_tile map p)) p)
       (Position.square camera#top_left camera#bottom_right);
-    target#draw tileset#vao ~texture:tileset#texture;
-    tileset#vao#clear;
-    target#draw jointset#vao ~texture:jointset#texture;
-    jointset#vao#clear
+    let parameters = 
+      DrawParameter.(make
+        ~culling:CullingMode.CullNone
+        ~depth_test:DepthTest.None
+        ~depth_write:false
+        ~blend_mode:BlendMode.alpha ()
+      )
+    in
+    let vao = 
+      VertexArray.static (module Window) target tileset#source
+    in
+    let uniform =
+      Uniform.empty
+      |> Uniform.vector2f "win_size" (Vector2f.from_int (Window.size target))
+      |> Uniform.vector2f "tex_size" (Vector2f.from_int (Texture.Texture2D.size tileset#texture))
+      |> Uniform.texture2D "mtexture" tileset#texture
+    in
+    VertexArray.draw (module Window) 
+      ~target 
+      ~vertices:vao 
+      ~program 
+      ~parameters
+      ~uniform ();
+    VertexArray.VertexSource.clear tileset#source;
+    let vao = 
+      VertexArray.static (module Window) target jointset#source
+    in
+    let uniform =
+      Uniform.empty
+      |> Uniform.vector2f "win_size" (Vector2f.from_int (Window.size target))
+      |> Uniform.vector2f "tex_size" (Vector2f.from_int (Texture.Texture2D.size jointset#texture))
+      |> Uniform.texture2D "mtexture" jointset#texture
+    in
+    VertexArray.draw (module Window) 
+      ~target 
+      ~vertices:vao 
+      ~program 
+      ~parameters
+      ~uniform ();
+    VertexArray.VertexSource.clear jointset#source
 
   (* Render a path with arrows *)
-  method private draw_path (target : render_window)
+  method private draw_path (target : Window.t)
     camera path =
     let draw = self#draw_from_map target camera in
     let angle s t =
@@ -238,36 +320,45 @@ let renderer = object(self)
 
   (* Render a unit *)
   method private draw_unit
-  (target : render_window) uphandle camera foggy character my_unit =
-    let (u_position,offset) = uphandle#unit_position my_unit in
+  (target : Window.t) (uphandle : Updates.handler) camera foggy character my_unit =
+    let (u_position,(ox,oy)) = uphandle#unit_position my_unit in
+    let offset = Vector2f.({x = ox; y = oy}) in
     if foggy u_position then ()
     else begin
       let color =
         if my_unit#has_played
-        then Color.rgb 150 150 150
-        else Color.rgb 255 255 255
+        then `RGB Color.RGB.({r = 0.6; g = 0.6; b = 0.6; a = 1.0}) 
+        else `RGB Color.RGB.white
       in
       let name = character ^ "_" ^ my_unit#name in
       self#draw_from_map ~offset target camera name u_position ~color ();
       let size = int_of_float (camera#zoom *. 14.) in
-      let (ox,oy) = offset in
-      let position = addf2D
-        (foi2D (camera#project u_position))
-        (ox *. camera#zoom, oy *. camera#zoom)
+      let (x,y) = camera#project u_position in
+      let position = 
+        Vector2f.add
+          (Vector2f.from_int Vector2i.({x;y}))
+          (Vector2f.prop camera#zoom offset)
       in
-      new text ~string:(string_of_int (my_unit#hp))
-        ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
-      |> target#draw
+      let text = 
+        Text.create 
+          ~text:(string_of_int (my_unit#hp))
+          ~position 
+          ~font 
+          ~color:(`RGB Color.RGB.({r = 0.9; g = 0.9; b = 0.95; a = 1.0})) 
+          ~size 
+          ~bold:false ()
+      in
+      Text.draw (module Window) ~target ~text ()
     end
 
   (* Draw a building *)
-  method private draw_building
-  (target : render_window) camera character building =
+  method private draw_building 
+  (target : Window.t) camera character building =
     let name = character ^ "_" ^ building#name in
     self#draw_from_map target camera name (building#position) ()
 
   (* Render a range (move or attack, according to cursor's state) *)
-  method private draw_range (target : render_window) camera map =
+  method private draw_range (target : Window.t) camera map =
     match camera#cursor#get_state with
     | Cursor.Idle -> ()
     | Cursor.Displace(_,my_unit,(range,_)) -> begin
@@ -277,10 +368,10 @@ let renderer = object(self)
         List.filter (self#filter_positions map) attack_range
       in
       List.iter (self#highlight_tile target camera
-        (Color.rgba 255 255 100 150)) range;
+        (Color.RGB.({r = 1.0; g = 1.0; b = 0.4; a = 0.6})))  range;
       if List.mem camera#cursor#position range then
         List.iter (self#highlight_tile target camera
-          (Color.rgba 255 50 50 255)) attack_range
+          (Color.RGB.({r = 1.0; g = 0.2; b = 0.2; a = 1.0}))) attack_range
     end
     | Cursor.Action(my_unit,p,_) -> begin
       let range = Position.range p my_unit#min_attack_range
@@ -289,38 +380,42 @@ let renderer = object(self)
         List.filter (self#filter_positions map) range
       in
       List.iter (self#highlight_tile target camera
-        (Color.rgba 255 50 50 255)) attack_range
+          (Color.RGB.({r = 1.0; g = 0.2; b = 0.2; a = 1.0}))) attack_range
     end
     | Cursor.Build _ | Cursor.Watched_attack -> ()
 
   (* Draw the cursor *)
-  method private draw_cursor (target : render_window)
+  method private draw_cursor (target : Window.t)
     (camera : Camera.camera) =
     let texname =
       Cursor.(match camera#cursor#get_state with
       | Idle | Displace(_,_,_) | Build _ -> "cursor"
       | Action(_,_,_) | Watched_attack -> "sight")
     in
+    let (x,y) = camera#cursor#offset in
+    let f = camera#cursor#scale in
     self#draw_from_map target camera texname camera#cursor#position
-      ~offset:(Utils.subf2D (0.,0.) camera#cursor#offset)
-      ~scale:(camera#cursor#scale, camera#cursor#scale) ()
+      ~offset:(Vector2f.({x = -.x; y = -.y}))
+      ~scale:(Vector2f.({x = f; y = f})) ()
 
-  (* TODO Draw the GUI *)
-  (*method draw_gui (target : render_window)
+  method draw_gui (target : render_window)
     (ui_manager : UIManager.ui_manager) =
-    ui_manager#draw target texture_library*)
+    ui_manager#draw target texture_library
 
   (* Draw the whole game *)
-  method render_game (target : render_window)
+  method render_game (target : Window.t)
     (data : ClientData.client_data) (uphandle : Updates.handler) =
 
-    let (sx, sy) = Utils.foi2D target#get_size in
+    let sizef = Vector2f.from_int (Window.size target) in
 
-    new sprite
-      ~texture:(TextureLibrary.(get_texture texture_library "background"))
-      ~scale:(max (sx /. 2048.) 1., max (sy /. 2048.) 1.)
-      ()
-    |> target#draw;
+    let sprite = 
+      Sprite.create 
+        ~texture:(TextureLibrary.(get_texture texture_library "background"))
+        ~scale:Vector2f.({x = (Pervasives.max (sizef.x /. 2048.) 1.); 
+                          y =  Pervasives.max (sizef.y /. 2048.) 1.})
+        ()
+    in
+    Sprite.draw (module Window) ~target ~sprite ();
     (* For the fog *)
     let fog = data#actual_player#get_fog in
     let foggy p = Fog.hidden fog p in
@@ -362,12 +457,15 @@ let renderer = object(self)
     data#minimap#draw target data#camera#cursor;
     (* Displaying case information *)
     let drawer s pos =
-      self#draw_txr target s ?position:(Some pos) ?size:(Some (30.,30.)) ()
+      self#draw_txr target s 
+        ?position:(Some pos) 
+        ~size:(Vector2f.({x = 30.; y = 30.})) ()
     in
     let tile_drawer s pos =
       let set = TilesetLibrary.get_tileset tileset_library "tileset" in
       self#draw_direct_tile target set s
-        ~position:pos ~scale:(30./.50.,30./.50.) ()
+        ~position:pos 
+        ~scale:(Vector2f.({x = 30. /. 50.; y = 30. /. 50.})) ()
     in
     let is_foggy = foggy data#camera#cursor#position in
     let s_unit =
@@ -423,10 +521,9 @@ let renderer = object(self)
       s_tile ;
     (* Display resources *)
     let resources = string_of_int data#actual_player#get_value_resource in
-    let (w,h) = foi2D target#get_size in
     GuiTools.(rect_print
       target (resources ^ " flowers") font Color.white (Pix 30) (Pix 10) Right
-      { left = 20. ; top = 5. ; width = w -. 40. ; height = 100. });
+      { left = 20. ; top = 5. ; width = sizef.Vector2f.x -. 40. ; height = 100. }); 
     (* Display players turn *)
     let current = Updates.(match uphandle#current_turn with
       | Your_turn -> "Your turn"
@@ -435,14 +532,16 @@ let renderer = object(self)
     ) in
     GuiTools.(rect_print
       target current font Color.white (Pix 30) (Pix 10) Right
-      { left = 20. ; top = h -. 50. ; width = w -. 40. ; height = 100. });
+      { left = 20. ; top = sizef.Vector2f.y -. 50. ; width = sizef.Vector2f.x -. 40. ; height = 100. }); 
     (* Display speed of action *)
     let speed = uphandle#speed in
     if speed <> "normal" then
-      self#draw_txr target speed ~position:(w-.50.,h-.70.) ~size:(75.,75.) () ;
+      self#draw_txr target speed 
+        ~position:Vector2f.({x = sizef.x-.50.; y = sizef.y-.70.}) 
+        ~size:Vector2f.({x = 75.; y = 75.}) () ;
     (* Display end of game *)
     uphandle#end_screen target ;
     (* Display framerate *)
-    FPS.display target
+    FPS.display (module Window) target
 
 end

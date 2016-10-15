@@ -1,8 +1,7 @@
+open OgamlUtils
 open Settings_t
 open Settings_engine_t
 open Settings_interface_t
-
-module ConfigLog = Log.Make (struct let section = "Config" end)
 
 exception Missing_config of string
 
@@ -16,13 +15,19 @@ begin
   | Some err -> raise (Config_error (file^" : "^Ag_util.Validation.string_of_error err))
 end
 
+let info fmt = Log.info Log.stdout ("%s" ^^ fmt) "Config : "
+
+let error fmt = Log.error Log.stdout ("%s" ^^ fmt) "Config : "
+
+let fatal fmt = Log.fatal Log.stdout ("%s" ^^ fmt) "Config : "
+
 (* Tiles config *)
 
 let create_valid_parsed_tiles_list_from_file file config_name =
   let open Tile_t in
   let t = Ag_util.Json.from_file Tile_j.read_t_list file in
   let tr = check_error file Tile_v.validate_t_valid_list [] {list = t;} in
-  ConfigLog.info "%s[loaded] tiles_list : %s" config_name file;
+  info "%s[loaded] tiles_list : %s" config_name file;
   tr.list
 
 let create_tiles_list_from_file file config_name =
@@ -32,7 +37,7 @@ let create_valid_parsed_tiles_list_from_string s config_name =
   let open Tile_t in
   let t = Tile_j.t_list_of_string s in
   let tr = check_error "tile" Tile_v.validate_t_valid_list [] {list = t;} in
-  ConfigLog.info "%s[loaded] tiles_list" config_name;
+  info "%s[loaded] tiles_list" config_name;
   tr.list
 
 let create_tiles_list_from_string s config_name =
@@ -47,7 +52,7 @@ let create_valid_parsed_units_list file config_name =
   let open Unit_t in
   let t = Ag_util.Json.from_file Unit_j.read_t_list file in
   let tr = check_error file Unit_v.validate_t_valid_list [] {list = t;} in
-  ConfigLog.info "%s[loaded] unbound_units_list : %s" config_name file;
+  info "%s[loaded] unbound_units_list : %s" config_name file;
   tr.list
 
 let create_unbound_units_list_from_file file config_name =
@@ -57,7 +62,7 @@ let create_valid_parsed_units_list_from_string s config_name =
   let open Unit_t in
   let t = Unit_j.t_list_of_string s in
   let tr = check_error "units" Unit_v.validate_t_valid_list [] {list = t;} in
-  ConfigLog.info "%s[loaded] unbound_units_list" config_name;
+  info "%s[loaded] unbound_units_list" config_name;
   tr.list
 
 let create_unbound_units_list_from_string s config_name =
@@ -72,7 +77,7 @@ let create_valid_parsed_buildings_list file config_name =
   let open Building_t in
   let t = Ag_util.Json.from_file Building_j.read_t_list file in
   let tr = check_error file Building_v.validate_t_valid_list [] {list = t;} in
-  ConfigLog.info "%s[loaded] unbound_buildings_list : %s" config_name file;
+  info "%s[loaded] unbound_buildings_list : %s" config_name file;
   tr.list
 
 let create_unbound_buildings_list_from_file file config_name =
@@ -82,7 +87,7 @@ let create_valid_parsed_buildings_list_from_string s config_name =
   let open Building_t in
   let t = Building_j.t_list_of_string s in
   let tr = check_error "buildings" Building_v.validate_t_valid_list [] {list = t;} in
-  ConfigLog.info "%s[loaded] unbound_buildings_list" config_name;
+  info "%s[loaded] unbound_buildings_list" config_name;
   tr.list
 
 let create_unbound_buildings_list_from_string s config_name =
@@ -96,49 +101,49 @@ let string_of_unbound_buildings_list buildings_list =
 let create_settings_from_file file config_name =
   let t = Ag_util.Json.from_file Settings_j.read_t file in
   let tr = check_error file Settings_v.validate_t [] t in
-  ConfigLog.info "%s[loaded] settings : %s" config_name file;
+  info "%s[loaded] settings : %s" config_name file;
   tr
 
 let create_engine_settings_from_file file config_name =
   let t = Ag_util.Json.from_file Settings_engine_j.read_t file in
   let tr = check_error file Settings_engine_v.validate_t [] t in
-  ConfigLog.info "%s[loaded] settings_engine : %s" config_name file;
+  info "%s[loaded] settings_engine : %s" config_name file;
   tr
 
 let create_interface_settings_from_file file config_name =
   let t = Ag_util.Json.from_file Settings_interface_j.read_t file in
   let tr = check_error file Settings_interface_v.validate_t [] t in
-  ConfigLog.info "%s[loaded] settings_interface : %s" config_name file;
+  info "%s[loaded] settings_interface : %s" config_name file;
   tr
 
 let write_settings_in_file file settings config_name =
   Ag_util.Json.to_file Settings_j.write_t file settings;
-  ConfigLog.info "%s[saved] settings : %s" config_name file
+  info "%s[saved] settings : %s" config_name file
 
 let write_engine_settings_in_file file settings config_name =
   Ag_util.Json.to_file Settings_engine_j.write_t file settings;
-  ConfigLog.info "%s[saved] settings_engine : %s" config_name file
+  info "%s[saved] settings_engine : %s" config_name file
 
 let write_interface_settings_in_file file settings config_name =
   Ag_util.Json.to_file Settings_interface_j.write_t file settings;
-  ConfigLog.info "%s[saved] settings_interface : %s" config_name file
+  info "%s[saved] settings_interface : %s" config_name file
 
 let create_settings_from_string config_name s =
   let t = Settings_j.t_of_string s in
   let tr = check_error "settings" Settings_v.validate_t [] t in
-  ConfigLog.info "%s[loaded] settings" config_name;
+  info "%s[loaded] settings" config_name;
   tr
 
 let create_engine_settings_from_string config_name s =
   let t = Settings_engine_j.t_of_string s in
   let tr = check_error "engine_setings" Settings_engine_v.validate_t [] t in
-  ConfigLog.info "%s[loaded] settings_engine" config_name;
+  info "%s[loaded] settings_engine" config_name;
   tr
 
 let create_interface_settings_from_string config_name s =
   let t = Settings_interface_j.t_of_string s in
   let tr = check_error "interface_settings" Settings_interface_v.validate_t [] t in
-  ConfigLog.info "%s[loaded] settings_interface" config_name;
+  info "%s[loaded] settings_interface" config_name;
   tr
 
 let string_of_settings settings =
@@ -220,7 +225,7 @@ object (self)
                     settings_temp_file settings_default_file
                     engine_settings_temp_file engine_settings_default_file
                     interface_settings_temp_file interface_settings_default_file =
-    let aux a b = if a <> "" then (if Sys.file_exists a then a else (ConfigLog.error "%s[missing] %s" config_name a; b)) else b in
+    let aux a b = if a <> "" then (if Sys.file_exists a then a else (error "%s[missing] %s" config_name a; b)) else b in
     tiles_config <- aux tiles_file tiles_config;
     units_config <- aux units_file units_config;
     buildings_config <- aux buildings_file buildings_config;
@@ -257,22 +262,22 @@ object (self)
 
   method tiles_list = match t_list with
     | Some a -> a
-    | None -> ConfigLog.fatal "%s[missing] tiles" config_name;raise (Missing_config "no valid tiles file loaded so far, did you call init?")
+    | None -> fatal "%s[missing] tiles" config_name;raise (Missing_config "no valid tiles file loaded so far, did you call init?")
   method unbound_units_list = match u_list with
     | Some a -> a
-    | None -> ConfigLog.fatal "%s[missing] units" config_name;raise (Missing_config "no valid units file loaded so far, did you call init?")
+    | None -> fatal "%s[missing] units" config_name;raise (Missing_config "no valid units file loaded so far, did you call init?")
   method unbound_buildings_list = match b_list with
     | Some a -> a
-    | None -> ConfigLog.fatal "%s[missing] buildings" config_name;raise (Missing_config "no valid buildings file loaded so far, did you call init?")
+    | None -> fatal "%s[missing] buildings" config_name;raise (Missing_config "no valid buildings file loaded so far, did you call init?")
   method private settings_unsafe = match s with
     | Some a -> a
-    | None -> ConfigLog.fatal "%s[missing] settings" config_name;raise (Missing_config "no valid settings file loaded so far, did you call init?")
+    | None -> fatal "%s[missing] settings" config_name;raise (Missing_config "no valid settings file loaded so far, did you call init?")
   method private settings_engine_unsafe = match engine_s with
     | Some a -> a
-    | None -> ConfigLog.fatal "%s[missing] settings_engine" config_name;raise (Missing_config "no valid engine settings file loaded so far, did you call init_engine?")
+    | None -> fatal "%s[missing] settings_engine" config_name;raise (Missing_config "no valid engine settings file loaded so far, did you call init_engine?")
   method private settings_interface_unsafe = match interface_s with
     | Some a -> a
-    | None -> ConfigLog.fatal "%s[missing] settings_interface" config_name;raise (Missing_config "no valid interface settings file loaded so far, did you call init_interface?")
+    | None -> fatal "%s[missing] settings_interface" config_name;raise (Missing_config "no valid interface settings file loaded so far, did you call init_interface?")
   method settings = self#fix_settings;self#settings_unsafe
   method settings_engine = self#fix_settings_engine;self#settings_engine_unsafe
   method settings_interface = self#fix_settings_interface;self#settings_interface_unsafe
@@ -284,24 +289,24 @@ object (self)
 
   method private load_settings str =
     if str <> "" then
-      (s <- ( try Some (create_settings_from_file str config_name) with Config_error (msg) -> ConfigLog.error "%s" msg;None );
+      (s <- ( try Some (create_settings_from_file str config_name) with Config_error (msg) -> error "%s" msg;None );
       if s <> None then self#update_safe_s)
   method private load_settings_engine str =
     if str <> "" then
-      (engine_s <- ( try Some (create_engine_settings_from_file str config_name) with Config_error (msg) -> ConfigLog.error "%s" msg;None );
+      (engine_s <- ( try Some (create_engine_settings_from_file str config_name) with Config_error (msg) -> error "%s" msg;None );
       if engine_s <> None then self#update_safe_engine_s)
   method private load_settings_interface str =
     if str <> "" then
-      (interface_s <- ( try Some (create_interface_settings_from_file str config_name) with Config_error (msg) -> ConfigLog.error "%s" msg;None );
+      (interface_s <- ( try Some (create_interface_settings_from_file str config_name) with Config_error (msg) -> error "%s" msg;None );
       if interface_s <> None then self#update_safe_interface_s)
 
   method reload_settings = self#load_settings self#available_settings
   method reload_settings_engine = self#load_settings_engine self#available_engine_settings
   method reload_settings_interface = self#load_settings_interface self#available_interface_settings
   method reload_all =
-    if tiles_config <> "" then t_list <- ( try Some (create_tiles_list_from_file tiles_config config_name) with Config_error (msg) -> ConfigLog.error "%s" msg;None );
-    if units_config <> "" then u_list <- ( try Some (create_unbound_units_list_from_file units_config config_name) with Config_error (msg) -> ConfigLog.error "%s" msg;None );
-    if buildings_config <> "" then b_list <- ( try Some (create_unbound_buildings_list_from_file buildings_config config_name) with Config_error (msg) -> ConfigLog.error "%s" msg;None );
+    if tiles_config <> "" then t_list <- ( try Some (create_tiles_list_from_file tiles_config config_name) with Config_error (msg) -> error "%s" msg;None );
+    if units_config <> "" then u_list <- ( try Some (create_unbound_units_list_from_file units_config config_name) with Config_error (msg) -> error "%s" msg;None );
+    if buildings_config <> "" then b_list <- ( try Some (create_unbound_buildings_list_from_file buildings_config config_name) with Config_error (msg) -> error "%s" msg;None );
     self#reload_settings;
     self#reload_settings_engine;
     self#reload_settings_interface
@@ -315,10 +320,10 @@ object (self)
     self#reset_settings_interface
 
   method load_from_strings tiles_s unbound_units_s unbound_buildings_s settings_s =
-    t_list <- ( try Some (create_tiles_list_from_string tiles_s config_name) with Config_error (msg) -> ConfigLog.error "%s" msg;None );
-    u_list <- ( try Some (create_unbound_units_list_from_string unbound_units_s config_name) with Config_error (msg) -> ConfigLog.error "%s" msg;None );
-    b_list <- ( try Some (create_unbound_buildings_list_from_string unbound_buildings_s config_name) with Config_error (msg) -> ConfigLog.error "%s" msg;None );
-    s <- ( try Some (create_settings_from_string settings_s config_name) with Config_error (msg) -> ConfigLog.error "%s" msg;None )
+    t_list <- ( try Some (create_tiles_list_from_string tiles_s config_name) with Config_error (msg) -> error "%s" msg;None );
+    u_list <- ( try Some (create_unbound_units_list_from_string unbound_units_s config_name) with Config_error (msg) -> error "%s" msg;None );
+    b_list <- ( try Some (create_unbound_buildings_list_from_string unbound_buildings_s config_name) with Config_error (msg) -> error "%s" msg;None );
+    s <- ( try Some (create_settings_from_string settings_s config_name) with Config_error (msg) -> error "%s" msg;None )
 
   method string_of_tiles_list = string_of_tiles_list self#tiles_list
   method string_of_unbound_units_list = string_of_unbound_units_list self#unbound_units_list
@@ -353,20 +358,20 @@ object (self)
     (try self#check_settings
     with | Config_error (msg) ->
       self#revert_s;
-      ConfigLog.error "%s" msg;
-      ConfigLog.info "%s[reverted] settings" config_name)
+      error "%s" msg;
+      info "%s[reverted] settings" config_name)
   method private fix_settings_engine =
     (try self#check_settings_engine
     with | Config_error (msg) ->
       self#revert_engine_s;
-      ConfigLog.error "%s" msg;
-      ConfigLog.info "%s[reverted] settings_engine" config_name)
+      error "%s" msg;
+      info "%s[reverted] settings_engine" config_name)
   method private fix_settings_interface =
     (try self#check_settings_interface
     with | Config_error (msg) ->
       self#revert_interface_s;
-      ConfigLog.error "%s" msg;
-      ConfigLog.info "%s[reverted] settings_interface" config_name)
+      error "%s" msg;
+      info "%s[reverted] settings_interface" config_name)
 
   method private char_of_tile_off tile offset =
     let tiles = self#tiles_list in
@@ -420,7 +425,7 @@ object (self)
   method unbound_building_of_char c = self#unbound_building_of_char_off c self#settings.serializer_offset
 
   method string_of_unit (u:Unit.t) =
-    let s0 = let s = "0" in s.[0] <- (self#char_of_unbound_unit (u:> Unit.unbound_t));s in
+    let s0 = let s = "0" in Bytes.set s 0 (self#char_of_unbound_unit (u:> Unit.unbound_t));s in
     let (s1,s2) = let (a,b) = Position.topair u#position in (string_of_int a,string_of_int b) in
     let s3 = string_of_int u#player_id in
     let s4 = string_of_int u#get_id in
@@ -447,7 +452,7 @@ object (self)
     Unit.bind_extended u p pid id hp h_p
     
   method string_of_building (u:Building.t) =
-    let s0 = let s = "0" in s.[0] <- (self#char_of_unbound_building (u:> Building.unbound_t));s in
+    let s0 = let s = "0" in Bytes.set s 0 (self#char_of_unbound_building (u:> Building.unbound_t));s in
     let (s1,s2) = let (a,b) = Position.topair u#position in (string_of_int a,string_of_int b) in
     let s3 = match u#player_id with None -> "None" | Some id -> string_of_int id in
     let s4 = string_of_int u#get_id in
@@ -494,8 +499,8 @@ object (self)
       let rec list_to_string n = function
       | []->ss
       | (a,b)::q ->
-        ss.[2*n] <- a;
-        ss.[2*n+1] <- (char_of_int ((b+off2) mod 256));
+        Bytes.set ss (2*n) a;
+        Bytes.set ss (2*n+1) (char_of_int ((b+off2) mod 256));
         list_to_string (n+1) q
       in
       list_to_string 0 li
@@ -516,7 +521,7 @@ object (self)
       | [] -> ss
       | (a,b)::q ->
         for i = 0 to b-1 do
-          ss.[p+i] <- a;
+          Bytes.set ss (p+i) a;
         done;
         fill_string (p+b) q
       in

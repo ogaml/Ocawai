@@ -19,5 +19,6 @@ B _build/src/music/
 B _build/src/script/
 
 PKG ogaml.graphics
-
+PKG yojson
+PKG atdgen
 

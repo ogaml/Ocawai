@@ -27,7 +27,7 @@ let init_string n f =
     failwith "init_string";
   let s = String.make n ' ' in
   for i = 0 to n - 1 do
-    s.[i] <- f i
+    Bytes.set s i (f i)
   done; s
 
 let base_path () =

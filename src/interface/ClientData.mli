@@ -28,7 +28,7 @@ class client_data : object
 
   method minimap : Minimap.minimap
 
-  method case_info : CaseInfo.case_info
+  method case_info : CaseInfo.case_info 
 
   method camera : Camera.camera
 

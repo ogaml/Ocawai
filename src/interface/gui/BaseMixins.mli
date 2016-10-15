@@ -41,8 +41,8 @@ end
 
 (** A mixin that represents a keyboard-controlled list
   * The two parameters are the up/down keys *)
-class virtual key_ctrl_list : OgamlCore.KeyCode.t ->
-  OgamlCore.KeyCode.t -> object
+class virtual key_ctrl_list : OgamlCore.Keycode.t ->
+  OgamlCore.Keycode.t -> object
 
   val virtual mutable nb_items : int
 

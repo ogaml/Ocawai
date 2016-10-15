@@ -1,5 +1,5 @@
 
-DIRS=src/common/config,src/common/utils,src/common,src/engine,src/interface/gui,src/interface/amaze,src/interface,src/music,src/script
+DIRS=src/common/config,src/common/utils,src/common,src/engine,src/interface/gui,src/interface/amaze,src/interface,src/script
 
 ATD = src/common/config/Settings.atd\
 			src/common/config/Settings_engine.atd\

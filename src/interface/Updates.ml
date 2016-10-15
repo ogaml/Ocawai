@@ -1,3 +1,6 @@
+open OgamlGraphics
+open OgamlMath
+open OgamlUtils
 open Types
 
 type turn =
@@ -25,10 +28,6 @@ type state =
   | Lost
   | Won
 
-(* Logger *)
-module Log = Log.Make (struct let section = "Updates" end)
-open Log
-
 (* Number of frames for a unit to run through a tile *)
 let walking_time = 3
 
@@ -42,7 +41,7 @@ let boom_time = 10
 let end_time = 30
 
 (* Font *)
-let font = Fonts.load_font "FreeSansBold.ttf"
+let font = Font.load "resources/fonts/FreeSansBold.ttf"
 
 class handler data camera = object(self)
 
@@ -81,7 +80,9 @@ class handler data camera = object(self)
     | FFast  -> frame_counter <- frame_counter + 4
 
   (* Log an update *)
-  method private log_update = function
+  method private log_update = 
+    let info fmt = Log.info Log.stdout ("%s" ^^ fmt) "Updates : " in
+    function
     | Game_over -> info "Game Over"
     | You_win -> info "You win"
     | Your_turn -> info "Your turn"
@@ -202,7 +203,8 @@ class handler data camera = object(self)
               if List.exists self#visible path then begin
                 let vpath = List.filter self#visible path in
                 camera#set_position (List.nth vpath (List.length vpath - 1)) ;
-                Sounds.play_sound "boots" ;
+                (* TODO *)
+(*                 Sounds.play_sound "boots" ; *)
                 let player = Logics.find_player id_p data#players in
                 current_animation <-
                   Moving_unit (player#get_unit_by_id un, path) ;
@@ -210,13 +212,15 @@ class handler data camera = object(self)
               end
               else (self#ack_update u ; self#read_update)
           | Game_over ->
-              Sounds.play_sound "lose" ;
+                (* TODO *)
+(*               Sounds.play_sound "lose" ; *)
               current_animation <- End_lost ;
               self#stage_ack u ;
               (* There should'nt be any update but still... *)
               self#read_update
           | You_win ->
-              Sounds.play_sound "yeah" ;
+                (* TODO *)
+(*               Sounds.play_sound "yeah" ; *)
               current_animation <- End_win ;
               self#stage_ack u ;
               self#read_update
@@ -225,7 +229,8 @@ class handler data camera = object(self)
               let un = player#get_unit_by_id uid in
               if self#visible un#position then begin
                 current_animation <- Boom un#position ;
-                Sounds.play_sound "scream" ;
+                (* TODO *)
+(*                 Sounds.play_sound "scream" ; *)
                 self#ack_update u
               end
               else begin
@@ -239,7 +244,8 @@ class handler data camera = object(self)
               if self#visible u#position then begin
                 camera#set_position u#position ;
                 camera#cursor#set_state Cursor.Watched_attack ;
-                Sounds.play_sound "shots" ;
+                (* TODO *)
+(*                 Sounds.play_sound "shots" ; *)
                 current_animation <- Attack
               end
               else self#read_update
@@ -346,18 +352,23 @@ class handler data camera = object(self)
     | Boom pos -> Some pos
     | _ -> None
 
-  method end_screen (target:OcsfmlGraphics.render_window) = OcsfmlGraphics.(
-    let (w,h) = Utils.foi2D target#get_size in
+  method end_screen target =
+    let tsize = Vector2f.from_int (Window.size target) in
     let fade b text =
       let rate =
         if b || frame_counter > end_time then 1.
         else (float_of_int frame_counter) /. (float_of_int end_time)
       in
-      let color = Color.rgba 255 255 255 (int_of_float (rate *. 230.)) in
+      let color = Color.(`RGB RGB.({r = 1.0; g = 1.0; b = 1.0; a = (rate *. 230.) /. 255.})) in
       let size = 130 + (int_of_float ((1. -. rate) *. 100.)) in
-        GuiTools.(rect_print
-          target text font color (Pix size) (Pix 10) Center
-          { left = 0. ; top = h /. 3. ; width = w ; height = 500. })
+      let rect = 
+        FloatRect.({ x = 0. ; y = tsize.Vector2f.x /. 3. ; width = tsize.Vector2f.y ; height = 500. }) 
+      in
+      ignore rect;
+      ignore size;
+      ignore color;
+      GuiTools.(rect_print
+        (module Window) target text font color (Pix size) (Pix 10) Center rect) 
     in
     match current_animation with
     | End_win -> fade false "You win!"
@@ -373,6 +384,5 @@ class handler data camera = object(self)
         | Won -> fade true "You win!"
         | Playing -> ()
         end
-  )
 
 end

@@ -53,7 +53,8 @@ class tileset texture config =
 
     val coordinates = Hashtbl.create 13 
 
-    val source = VertexArray.VertexSource.empty ()
+    val source : VertexArray.SimpleVertex.T.s VertexArray.VertexSource.t 
+      = VertexArray.VertexSource.empty ()
 
     initializer
       List.iteri (fun i s ->

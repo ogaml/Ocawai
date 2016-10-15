@@ -39,7 +39,7 @@ class virtual modal : object
   val mutable holds_focus : bool
 
   method holds_focus : bool
-  method virtual handle_key : OcsfmlWindow.KeyCode.t -> unit
+  method virtual handle_key : OgamlCore.Keycode.t -> unit
 
 end
 

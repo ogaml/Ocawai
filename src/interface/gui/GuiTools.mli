@@ -18,7 +18,7 @@ val to_pixels : quantity -> int
 val rect_print : (module OgamlGraphics.RenderTarget.T with type t = 'a) ->
                  'a ->
                  string ->
-                 OgamlGraphics.font ->
+                 OgamlGraphics.Font.t ->
                  OgamlGraphics.Color.t ->
                  quantity ->
                  quantity ->

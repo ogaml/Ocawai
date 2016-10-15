@@ -1,24 +1,30 @@
-open OcsfmlGraphics
+open OgamlGraphics
+open OgamlMath
 
-let clk = new OcsfmlSystem.clock 
+let timer = ref (Unix.gettimeofday ())
 
 let framecount = ref 0
 
 let current_fps = ref 0
 
-let font = Fonts.load_font "digit.ttf"
+let font = Font.load "resources/fonts/digit.ttf"
 
-let display (target : #render_target) =
+let display (type s) (module M : RenderTarget.T with type t = s) (target : s) =
   incr framecount;
-  if OcsfmlSystem.Time.as_seconds clk#get_elapsed_time >= 1. then begin
-    ignore clk#restart;
+  if Unix.gettimeofday () -. !timer >= 1. then begin
+    timer := Unix.gettimeofday ();
     current_fps := !framecount;
     framecount := 0
   end;
-  new text ~string:(string_of_int !current_fps)
+  let text = 
+    Text.create 
+     ~text:(string_of_int !current_fps)
      ~font
-     ~character_size:42
-     ~color:Color.blue ()
-  |> target#draw;
+     ~size:42
+     ~position:Vector2f.zero
+     ~bold:false
+     ~color:(`RGB Color.RGB.blue) ()
+  in
+  Text.draw (module M) ~target ~text ()
 
 

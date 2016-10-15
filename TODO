@@ -4,3 +4,7 @@
 ☐ Fonts exceptions
 ☐ Window creation exceptions
 ☐ Fullscreen support check
+☐ Clock
+☐ Piecewise operations on vectors
+☐ Sprite color
+☐ Text bold default to false
