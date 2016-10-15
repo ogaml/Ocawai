@@ -31,26 +31,27 @@ type value = [
 
 exception Script_value_not_found of string
 
-module ScriptLoadingLog = Log.Make (struct let section = "Script" end)
+let info fmt = OgamlUtils.(Log.info Log.stdout ("%s" ^^ fmt) "Script : ")
+let error fmt = OgamlUtils.(Log.error Log.stdout ("%s" ^^ fmt) "Script : ")
 
 let value_table = Hashtbl.create 13
 
 let expose f t s =
-  ScriptLoadingLog.info "[exposed] %s" s;
+  info "[exposed] %s" s;
   Hashtbl.replace value_table s (f,t)
 
 let hide s =
-  ScriptLoadingLog.info "[hide] %s" s;
+  info "[hide] %s" s;
   Hashtbl.remove value_table s
 
 let type_of s =
   try
     snd (Hashtbl.find value_table s)
   with
-    |Not_found -> raise (Script_value_not_found s)
+    | Not_found -> raise (Script_value_not_found s)
 
 let value_of s =
   try
     fst (Hashtbl.find value_table s)
   with
-    |Not_found -> raise (Script_value_not_found s)
+    | Not_found -> raise (Script_value_not_found s)

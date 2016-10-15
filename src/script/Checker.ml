@@ -3,8 +3,9 @@
 open ScriptTypes
 
 (* For debug *)
-module CheckerLog = Log.Make (struct let section = "Type Checker" end)
-open CheckerLog
+let info fmt = OgamlUtils.(Log.info Log.stdout ("%s" ^^ fmt) "Checker : ")
+let error fmt = OgamlUtils.(Log.error Log.stdout ("%s" ^^ fmt) "Checker : ")
+let debug fmt = OgamlUtils.(Log.debug Log.stdout ("%s" ^^ fmt) "Checker : ")
 
 (* Hashtbl with physical equality on term_type *)
 module H = Hashtbl.Make(struct
