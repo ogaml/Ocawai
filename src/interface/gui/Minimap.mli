@@ -7,6 +7,7 @@ class minimap : int -> int -> int -> object
   method compute : Battlefield.t -> Player.logicPlayer list -> unit
 
   (** Draws the minimap *)
-  method draw : #OcsfmlGraphics.render_target -> Cursor.cursor -> unit
+  method draw : (module OgamlGraphics.RenderTarget.T with type t = 'a) -> 'a ->
+                Cursor.cursor -> unit
 
 end

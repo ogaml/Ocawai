@@ -14,7 +14,7 @@ class case_info : object
     * @param b_chara the character (string) owning the building
     * @param tile the selected tile
     * Draws the information related to the selection *)
-  method draw : #OcsfmlGraphics.render_target ->
+  method draw : (module OgamlGraphics.RenderTarget.T with type t = 'a) -> 'a ->
     (string -> (float * float) -> unit) ->
     (string -> (float * float) -> unit) ->
     (int * int) option ->

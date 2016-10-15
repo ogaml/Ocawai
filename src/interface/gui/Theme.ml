@@ -1,4 +1,4 @@
-open OcsfmlGraphics
+open OgamlGraphics
 
 type t = {
   bar_color         : Color.t;
@@ -8,24 +8,24 @@ type t = {
   active_color      : Color.t}
 
 
-let blue_theme = 
-  {bar_color       = Color.rgb 56 78 147;
-   default_color   = Color.rgb 186 217 244;
-   highlight_color = Color.rgb 139 180 228;
-   border_color    = Color.rgb 120 160 200;
-   active_color    = Color.rgb 30 115 189}
+let blue_theme =
+  { bar_color       = Color.(`RGB { .22 ; .3 ; .57 ; 1. }) ;
+    default_color   = Color.(`RGB { .73 ; .85 ; .95 ; 1. }) ;
+    highlight_color = Color.(`RGB { .54 ; .7 ; .89 ; 1. }) ;
+    border_color    = Color.(`RGB { .47 ; .625 ; .78 ; 1. }) ;
+    active_color    = Color.(`RGB { .12 ; .45 ; .74 ; 1. }) }
 
 
 let yellow_theme =
-  {bar_color       = Color.rgb 90 90 10;
-   default_color   = Color.rgb 190 190 130;
-   highlight_color = Color.rgb 155 155 110;
-   border_color    = Color.rgb 130 130 100;
-   active_color    = Color.rgb 120 120 0}
+  { bar_color       = Color.(`RGB { .35 ; .35 ; .04 ; 1. }) ;
+    default_color   = Color.(`RGB { .74 ; .74 ; .51 ; 1. }) ;
+    highlight_color = Color.(`RGB { .61 ; .61 ; .43 ; 1. }) ;
+    border_color    = Color.(`RGB { .51 ; .51 ; .39 ; 1. }) ;
+    active_color    = Color.(`RGB { .47 ; .47 ; 0. ; 1. }) }
 
 let red_theme =
-  {bar_color       = Color.rgb 100 10 10;
-   default_color   = Color.rgb 200 120 120;
-   highlight_color = Color.rgb 160 110 110;
-   border_color    = Color.rgb 150 100 100;
-   active_color    = Color.rgb 130 0 0}
+  { bar_color       = Color.(`RGB { .39 ; .04 ; .04 ; 1. }) ;
+    default_color   = Color.(`RGB { .78 ; .47 ; .47 ; 1. }) ;
+    highlight_color = Color.(`RGB { .625 ; .43 ; .43 ; 1. }) ;
+    border_color    = Color.(`RGB { .59 ; .39 ; .39 ; 1. }) ;
+    active_color    = Color.(`RGB { .51 ; 0. ; 0. ; 1. }) }

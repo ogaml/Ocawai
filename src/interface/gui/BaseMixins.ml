@@ -1,11 +1,10 @@
-open OcsfmlGraphics
-open OcsfmlWindow
+open OgamlGraphics
 open Utils
 open GuiTools
 open Widget
 
 (* Put it in the theme ? *)
-let bold_font = Fonts.load_font "FreeSansBold.ttf"
+let bold_font = Font.load "FreeSansBold.ttf"
 
 
 class virtual ['a] widget_container = object(self)
@@ -68,18 +67,18 @@ class virtual key_ctrl_list key1 key2 = object(self)
 
   val virtual mutable nb_items : int
 
-  method virtual add_event : (Event.t -> bool) -> unit
+  method virtual add_event : (OgamlCore.Event.t -> bool) -> unit
 
   method selected = selected
 
   method reset_selection = selected <- 0
 
   initializer
-    self#add_event (function
-      |Event.KeyPressed {Event.code = kc; _} when kc = key1 ->
+    self#add_event OgamlCore.(function
+      | Event.KeyPressed { Event.KeyEvent.key = kc ; _} when kc = key1 ->
           nb_items <> 0
           && (selected <- (selected - 1 + nb_items) mod nb_items; true)
-      |Event.KeyPressed {Event.code = kc; _} when kc = key2 ->
+      | Event.KeyPressed { Event.KeyEvent.key = kc ; _} when kc = key2 ->
           nb_items <> 0
           && (selected <- (selected + 1 + nb_items) mod nb_items; true)
       | _ -> false)
@@ -100,7 +99,7 @@ class virtual has_toolbar = object(self)
 
   method draw target lib =
     let position = foi2D (sub2D self#position (2, toolbar_height)) in
-    new rectangle_shape ~position ~size:(foi2D (fst size + 4, toolbar_height))
+    (* new rectangle_shape ~position ~size:(foi2D (fst size + 4, toolbar_height))
       ~fill_color:theme.Theme.bar_color ()
     |> target#draw;
     let th = float_of_int toolbar_height in
@@ -113,6 +112,8 @@ class virtual has_toolbar = object(self)
           left = posx +. th ;
           top = posy ;
           width = sx -. th ;
-          height = sy }
+          height = sy } *)
+    (* TODO *)
+    ()
 
 end

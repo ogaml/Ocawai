@@ -17,16 +17,16 @@ class virtual widget : object
   method position : int * int
 
   (** Adds an event catcher to this widget *)
-  method add_event : (OcsfmlWindow.Event.t -> bool) -> unit
+  method add_event : (OgamlCore.Event.t -> bool) -> unit
 
   (** Clears events *)
   method clear_event : unit
 
   (** Catches the given event *)
-  method on_event : OcsfmlWindow.Event.t -> bool
+  method on_event : OgamlCore.Event.t -> bool
 
   (** Draw the widget to the given target *)
-  method virtual draw : OcsfmlGraphics.render_window -> TextureLibrary.t ->
+  method virtual draw : OgamlGraphics.Window.t -> TextureLibrary.t ->
     unit
 
   (** Set the relative position of this widget *)

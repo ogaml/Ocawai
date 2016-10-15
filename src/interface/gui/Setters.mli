@@ -14,7 +14,7 @@ class virtual setter : (float * float) -> string -> object
 
   method position : float * float
 
-  method draw : OcsfmlGraphics.render_window -> unit
+  method draw : OgamlGraphics.Window.t -> unit
 
 end
 
@@ -29,11 +29,11 @@ object
 
   inherit setter
 
-  method draw : OcsfmlGraphics.render_window -> unit
+  method draw : OgamlGraphics.Window.t -> unit
 
   method action : unit
 
-  method handle_key : OcsfmlWindow.KeyCode.t -> unit
+  method handle_key : OgamlCore.Keycode.t -> unit
 
 end
 
@@ -48,7 +48,7 @@ object
 
   inherit setter
 
-  method draw : OcsfmlGraphics.render_window -> unit
+  method draw : OgamlGraphics.Window.t -> unit
   method action : unit
 
 end

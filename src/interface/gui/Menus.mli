@@ -9,7 +9,7 @@ class item : ?enabled:bool -> string -> string -> (unit -> unit) -> object
 
   val mutable size : int * int
 
-  method draw : OcsfmlGraphics.render_window -> TextureLibrary.t -> unit
+  method draw : OgamlGraphics.Window.t -> TextureLibrary.t -> unit
 
   method action : unit
 
@@ -17,7 +17,7 @@ end
 
 (** A class representing key-controlled buttons *)
 class key_button : icon:string -> text:string -> m_position:(int*int) ->
-  m_size:(int*int) -> keycode:OcsfmlWindow.KeyCode.t ->
+  m_size:(int*int) -> keycode:OgamlCore.Keycode.t ->
   callback:(unit -> unit) -> m_theme:Theme.t -> object
 
   inherit Widget.widget
@@ -26,7 +26,7 @@ class key_button : icon:string -> text:string -> m_position:(int*int) ->
 
   val mutable size : int * int
 
-  method draw : OcsfmlGraphics.render_window -> TextureLibrary.t -> unit
+  method draw : OgamlGraphics.Window.t -> TextureLibrary.t -> unit
 
   method set_callback : (unit -> unit) -> unit
 
@@ -64,6 +64,6 @@ class ingame_menu :
 
   method set_escape : (unit -> unit) -> unit
 
-  method draw : OcsfmlGraphics.render_window -> TextureLibrary.t -> unit
+  method draw : OgamlGraphics.Window.t -> TextureLibrary.t -> unit
 
 end

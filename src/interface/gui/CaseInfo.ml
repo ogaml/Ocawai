@@ -1,8 +1,8 @@
-open OcsfmlGraphics
+open OgamlGraphics
 open Utils
 open GuiTools
 
-let font = Fonts.load_font "FreeSans.ttf"
+let font = Font.load "FreeSans.ttf"
 
 
 let width  = 220.
@@ -10,7 +10,7 @@ let height = 150.
 
 class case_info = object(self)
 
-  method draw : 'a. (#render_target as 'a) ->
+  method draw : (module RenderTarget.T with type t = 'a) -> 'a ->
                 (string -> (float * float) -> unit) ->
                 (string -> (float * float) -> unit) ->
                 (int * int) option ->
@@ -21,8 +21,9 @@ class case_info = object(self)
                 string ->
                 Tile.t ->
                 unit =
-    fun target drawer tile_drawer damage foggy u chara building b_chara tile ->
-      let (w,h) = foi2D target#get_size in
+    fun (type s) (module M : RenderTarget.T with type t = s) (target : s)
+        drawer tile_drawer damage foggy u chara building b_chara tile ->
+      (* let (w,h) = foi2D target#get_size in
       let x = 10.
       and y = h -. 160. in
       let uh_offset = if u = None
@@ -148,6 +149,8 @@ class case_info = object(self)
       rect_print target (Tile.get_name tile) font (Color.rgb 66 66 66)
         (Pix 15) (Pix 2)
         Left
-        { left = 60. ; top = h -. 45. ; width = 170. ; height = 50. }
+        { left = 60. ; top = h -. 45. ; width = 170. ; height = 50. } *)
+  ()
+  (* TODO *)
 
 end

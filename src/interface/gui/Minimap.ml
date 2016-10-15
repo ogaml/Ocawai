@@ -1,14 +1,15 @@
-open OcsfmlGraphics
+open OgamlGraphics
 
 type mini_tile = Forest | Mountain | Plain | Water | Sand
 
 type mini_unit = Unit | Building
 
-let player_colors = [|
-  Color.rgb 255   0   0;
-  Color.rgb   0 255   0;
-  Color.rgb   0   0 255;
-  Color.rgb 255 255   0 |]
+let player_colors = Color.([|
+  `RGB RGB.red ;
+  `RGB RGB.green ;
+  `RGB RGB.blue ;
+  `RGB RGB.yellow
+|])
 
 let pairsum (a,b) = a + b
 
@@ -58,7 +59,7 @@ class minimap def width height = object(self)
           ((foi py) /. (foi (height - 1))) *. (foi (def - 1)))
         in
         majority_map.(px').(py').(!act_player) <-
-          (fst majority_map.(px').(py').(!act_player), 
+          (fst majority_map.(px').(py').(!act_player),
            snd majority_map.(px').(py').(!act_player) + 1)
       ) p#get_buildings;
       incr act_player
@@ -75,9 +76,9 @@ class minimap def width height = object(self)
         done;
         if !maxp <> -1 then
           let (a,b) = majority_map.(i).(j).(!maxp) in
-          if a >= b then 
+          if a >= b then
             player_map.(i).(j) <- Some (!maxp, Unit)
-          else 
+          else
             player_map.(i).(j) <- Some (!maxp, Building)
       done;
     done
@@ -98,19 +99,19 @@ class minimap def width height = object(self)
         in
         let pos = Position.create (i,j) in
         match Tile.get_name (Battlefield.get_tile battlefield pos) with
-        |"forest" ->
+        | "forest" ->
             majority_map.(px).(py).(0) <-
               majority_map.(px).(py).(0) + 1
-        |"mountain" ->
+        | "mountain" ->
             majority_map.(px).(py).(1) <-
               majority_map.(px).(py).(1) + 1
-        |"plain" ->
+        | "plain" ->
             majority_map.(px).(py).(2) <-
               majority_map.(px).(py).(2) + 1
-        |"water" | "lake" | "shallow" ->
+        | "water" | "lake" | "shallow" ->
             majority_map.(px).(py).(3) <-
               majority_map.(px).(py).(3) + 1
-        |"sand" | "beach" | "lake_beach" ->
+        | "sand" | "beach" | "lake_beach" ->
             majority_map.(px).(py).(4) <-
               majority_map.(px).(py).(4) + 1
         | _ -> ()
@@ -142,18 +143,22 @@ class minimap def width height = object(self)
     self#compute_players players
 
   method private add_rectangle vao pos size color =
-    vao#append (mk_vertex ~position:pos ~color ());
+    (* vao#append (mk_vertex ~position:pos ~color ());
     vao#append (mk_vertex ~position:(Utils.addf2D pos (fst size, 0.)) ~color ());
     vao#append (mk_vertex ~position:(Utils.addf2D pos size) ~color ());
-    vao#append (mk_vertex ~position:(Utils.addf2D pos (0., snd size)) ~color ())
+    vao#append (mk_vertex ~position:(Utils.addf2D pos (0., snd size)) ~color ()) *)
+    ()
+    (* TODO *)
 
-  val vao = new vertex_array ~primitive_type:Quads []
+  (* val vao = new vertex_array ~primitive_type:Quads [] *)
+  (* TODO *)
 
-  method draw : 'a. (#render_target as 'a) -> Cursor.cursor -> unit =
+  method draw : (module RenderTarget.T with type t = 'a) -> 'a ->
+                Cursor.cursor -> unit =
     fun target cursor ->
     let foi = float_of_int in
     let ratio = 200. /. (foi def) in
-    self#add_rectangle vao (4.,4.) (208.,208.) (Color.rgb 200 200 200);
+    (* self#add_rectangle vao (4.,4.) (208.,208.) (Color.rgb 200 200 200);
     for i = 0 to def - 1 do
       for j = 0 to def - 1 do
         let fill_color =
@@ -171,7 +176,7 @@ class minimap def width height = object(self)
         |Some(p,t) ->
           let alpha = (sin (Unix.gettimeofday () *. 3.) +. 1.)/. 2. in
           let alpha = int_of_float (100. *. alpha) + 50 in
-          if t = Unit then 
+          if t = Unit then
             self#add_rectangle vao ((8.+.(foi i)*.ratio), (8.+.(foi j)*.ratio))
               (ratio,ratio) (Color.rgba 255 255 255 alpha);
           self#add_rectangle vao ((9.+.(foi i)*.ratio), (9.+.(foi j)*.ratio))
@@ -186,6 +191,8 @@ class minimap def width height = object(self)
     self#add_rectangle vao ((8.+.(foi px')*.ratio), (8.+.(foi py')*.ratio))
       (ratio, ratio) (Color.rgba 255 255 255 180);
     target#draw vao;
-    vao#clear
+    vao#clear *)
+    (* TODO *)
+    ()
 
 end

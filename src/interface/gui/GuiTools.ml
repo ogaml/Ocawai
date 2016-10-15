@@ -1,4 +1,4 @@
-open OcsfmlGraphics
+open OgamlGraphics
 
 type alignment = Center | Left | Right
 type quantity = Pix of int | Pt of float
@@ -7,13 +7,16 @@ let to_pixels = function
   | Pix i -> i
   | Pt p -> int_of_float (0.72 *. p)
 
-let rec rect_print (target : #OcsfmlGraphics.render_target)
-  string font color size interline alignment rectangle =
+let rec rect_print (type s) (module M : RenderTarget.T with type t = s)
+                   (target : s)
+                   string font color size interline alignment rectangle =
 
   let character_size = to_pixels size in
   let interline_size = to_pixels interline in
 
-  let text = new text
+  () (* TODO But that seems like an annoying bit. *)
+
+  (* let text = new text
     ~string
     ~font
     ~color
@@ -104,4 +107,4 @@ let rec rect_print (target : #OcsfmlGraphics.render_target)
 
     target#draw text
 
-  with Exit -> ()
+  with Exit -> () *)

@@ -12,7 +12,7 @@ class text_framed_item : (int * int) -> (int * int) -> string ->
 
     method action : unit
 
-    method draw : OcsfmlGraphics.render_window -> TextureLibrary.t -> unit
+    method draw : OgamlGraphics.Window.t -> TextureLibrary.t -> unit
 
 end
 
@@ -33,6 +33,6 @@ class ingame_popup : m_position:(int * int) -> m_size:(int * int) ->
 
   val mutable nb_items : int
 
-  method draw : OcsfmlGraphics.render_window -> TextureLibrary.t -> unit
+  method draw : OgamlGraphics.Window.t -> TextureLibrary.t -> unit
 
 end

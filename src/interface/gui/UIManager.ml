@@ -1,5 +1,5 @@
 open Widget
-open OcsfmlGraphics
+open OgamlGraphics
 
 class ui_manager = object(self)
 
@@ -9,12 +9,12 @@ class ui_manager = object(self)
 
   method on_event e =
     let rec event_aux = function
-      |[] -> false
-      |t::q -> t#on_event e || (event_aux q)
+      | [] -> false
+      | t :: q -> t#on_event e || (event_aux q)
     in
     match focus with
-    |None -> event_aux widgets
-    |Some(w) -> w#on_event e || true
+    | None -> event_aux widgets
+    | Some(w) -> w#on_event e || true
 
   method focus : 'a. (#Widget.widget as 'a) -> unit =
     fun w -> focus <- Some (w :> Widget.widget)
@@ -22,7 +22,7 @@ class ui_manager = object(self)
   method unfocus : 'a. (#Widget.widget as 'a)  -> unit =
     fun w ->
       match focus with
-      |Some(w') when w' = (w :> Widget.widget) -> focus <- None
+      | Some w' when w' = (w :> Widget.widget) -> focus <- None
       | _ -> ()
 
   method is_focusing = focus <> None

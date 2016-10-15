@@ -1,11 +1,10 @@
-open OcsfmlGraphics
-open OcsfmlWindow
+open OgamlGraphics
 open GuiTools
 open Widget
 open BaseMixins
 open Utils
 
-let my_font = Fonts.load_font "FreeSans.ttf"
+let my_font = Font.load "FreeSans.ttf"
 
 class item ?enabled:(enabled = true) icon text (action : unit -> unit) =
   object(self)
@@ -19,13 +18,13 @@ class item ?enabled:(enabled = true) icon text (action : unit -> unit) =
 
   method draw target lib = if self#active then begin
     (* First draw the icon *)
-    let color = if enabled
-      then Color.rgb 255 255 255
-      else Color.rgb 150 150 150
+    let color = Color.(if enabled
+      then `RGB RGB.white
+      else `RGB { .6 ; .6 ; .6 ; 1. }
     in
     let position = foi2D self#position in
     let (selfx, selfy) = foi2D size in
-    Render.renderer#draw_txr target icon ~position:position
+    (* Render.renderer#draw_txr target icon ~position:position
       ~size:(selfy, selfy) ~centered:false ~color ();
     (* Then draw the text *)
     rect_print
@@ -35,7 +34,8 @@ class item ?enabled:(enabled = true) icon text (action : unit -> unit) =
         left = fst position +. selfy ;
         top = snd position ;
         width = selfx -. selfy ;
-        height = selfy }
+        height = selfy } *)
+    () (* TODO *)
   end
 
   method action = if enabled then action ()
@@ -55,19 +55,19 @@ class key_button ~icon ~text ~m_position ~m_size ~keycode
   val mutable size = m_size
 
   val mutable theme = m_theme
-  
+
   val mutable callback : unit -> unit = callback
 
   initializer
-    self#add_event (function
-      |Event.KeyPressed {Event.code = kc; _ } when keycode = kc ->
+    self#add_event OgamlCore.(function
+      | Event.KeyPressed { Event.KeyEvent.key = kc ; _ } when keycode = kc ->
           (callback (); true)
       | _ -> false)
 
   method set_callback c = callback <- c
 
   method draw target lib = if self#active then begin
-    new rectangle_shape ~fill_color:theme.Theme.default_color
+    (* new rectangle_shape ~fill_color:theme.Theme.default_color
       ~size:(foi2D size) ~position:(foi2D self#position)
       ~outline_color:theme.Theme.border_color
       ~outline_thickness:2. ()
@@ -83,7 +83,8 @@ class key_button ~icon ~text ~m_position ~m_size ~keycode
         left = fst position +. selfy ;
         top = snd position ;
         width = selfx -. selfy ;
-        height = selfy }
+        height = selfy } *)
+        () (* TODO *)
   end
 
 end
@@ -95,7 +96,7 @@ class ingame_menu ?escape ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_he
 
   inherit [item] evq_container as super
 
-  inherit key_ctrl_list OcsfmlWindow.KeyCode.Up OcsfmlWindow.KeyCode.Down as kcl
+  inherit key_ctrl_list OgamlCore.Keycode.Up OgamlCore.Keycode.Down as kcl
 
   inherit has_toolbar as toolbar
 
@@ -120,7 +121,7 @@ class ingame_menu ?escape ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_he
   method set_escape (esc : unit -> unit) = escape <- Some esc
 
   method draw target lib = if self#active then begin
-    new rectangle_shape ~fill_color:theme.Theme.default_color
+    (* new rectangle_shape ~fill_color:theme.Theme.default_color
       ~size:(foi2D (fst size, snd size+m_bar_height-2))
       ~position:(foi2D (fst self#position, snd self#position-m_bar_height+2))
       ~outline_thickness:2. ~outline_color:theme.Theme.border_color ()
@@ -131,7 +132,8 @@ class ingame_menu ?escape ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_he
       ~size:(foi2D (m_width, item_height))
       ~position:(foi2D (posx, posy + self#selected * item_height)) ()
     |> target#draw;
-    List.iter (fun w -> w#draw target lib) self#children
+    List.iter (fun w -> w#draw target lib) self#children *)
+    () (* TODO *)
   end
 
   method add_child w =
@@ -149,17 +151,17 @@ class ingame_menu ?escape ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_he
 
 
   initializer
-    self#add_event(function
-      | Event.KeyPressed { Event.code = OcsfmlWindow.KeyCode.Escape; _ } ->
+    self#add_event(OgamlCore.(function
+      | Event.KeyPressed { Event.KeyEvent.key = Keycode.Escape ; _ } ->
           begin match escape with
             | Some esc -> esc () ; true
             | None -> false
           end
-      | Event.KeyPressed { Event.code = KeyCode.Return ; _ }
-      | Event.KeyPressed { Event.code = KeyCode.Space ; _ } ->
+      | Event.KeyPressed { Event.KeyEvent.key = Keycode.Return ; _ }
+      | Event.KeyPressed { Event.KeyEvent.key = Keycode.Space ; _ } ->
           nb_items <> 0 &&
           ((List.nth self#children (nb_items - self#selected - 1))#action;
           true)
-      | _ -> false)
+      | _ -> false))
 
 end

@@ -1,10 +1,10 @@
-open OcsfmlGraphics
+open OgamlGraphics
 
 open Home
 open GuiTools
 open Utils
 
-let font = Fonts.load_font "FreeSans.ttf"
+let font = Font.load "FreeSans.ttf"
 
 let setter_width = 800.
 let setting_width = 300.
@@ -16,18 +16,18 @@ class virtual setter pos name = object(self)
 
   method position = pos
 
-  method draw (target : OcsfmlGraphics.render_window) =
+  method draw (target : OgamlGraphics.Window.t) =
 
     let bg_color =
-      if self#holds_focus then Color.rgb 233 233 233
-      else if has_focus then Color.rgb 237 240 242
-      else Color.white
+      if self#holds_focus then Color.(`RGB { .9 ; .9 ; .9 ; 1. })
+      else if has_focus then Color.(`RGB { .9 ; .94 ; .95 ; 1. })
+      else Color.(`RGB RGB.white)
     in
-    new rectangle_shape ~fill_color:bg_color
+    (* new rectangle_shape ~fill_color:bg_color
       ~size:(setter_width,setter_height) ~position:self#position
       ~origin:(setter_width/.2.,setter_height/.2.)
       ()
-    |> target#draw ;
+    |> target#draw ; *)
 
     rect_print
       target name font (Color.rgb 64 64 64) (Pix 20) (Pix 2) Left {
@@ -49,11 +49,11 @@ class slider ?default:(default = 50) pos update name = object(self)
 
   val mutable percentage = default
 
-  method draw (target : OcsfmlGraphics.render_window) =
+  method draw (target : OgamlGraphics.Window.t) =
 
     super_set#draw target ;
     (* First we have a line for the slider *)
-    let color = Color.rgb 57 131 204 in
+    (* let color = Color.rgb 57 131 204 in
     new rectangle_shape ~fill_color:color
       ~size:(slider_w,slider_h)
       ~origin:(slider_w /. 2., slider_h /. 2.)
@@ -72,7 +72,9 @@ class slider ?default:(default = 50) pos update name = object(self)
       ~position
       ~point_count: 100
       ()
-    |> target#draw
+    |> target#draw *)
+    ()
+    (* TODO *)
 
   method private incr =
     percentage <- min (percentage + 1) 100
@@ -83,7 +85,7 @@ class slider ?default:(default = 50) pos update name = object(self)
   method action =
     holds_focus <- true
 
-  method handle_key = OcsfmlWindow.KeyCode.(function
+  method handle_key = OgamlCore.Keycode.(function
     | Left -> self#decr
     | Right -> self#incr
     | Escape | Space | Return ->
@@ -102,9 +104,9 @@ class toogle ?default:(default = false) pos name update = object(self)
 
   val mutable toogle = default
 
-  method draw (target : OcsfmlGraphics.render_window) =
+  method draw (target : OgamlGraphics.Window.t) =
     super#draw target ;
-    let fill_color = if toogle then Color.rgb 57 131 204 else Color.white
+    (* let fill_color = if toogle then Color.rgb 57 131 204 else Color.white
     and position = addf2D (setter_width/.2. -. 20., 0.) self#position
     and outline_color = Color.rgb 97 171 244
     and outline_thickness = 2. in
@@ -117,7 +119,9 @@ class toogle ?default:(default = false) pos name update = object(self)
     ~outline_color
     ~outline_thickness
     ()
-    |> target#draw
+    |> target#draw *)
+    ()
+    (* TODO *)
 
   method action =
     toogle <- not toogle ;

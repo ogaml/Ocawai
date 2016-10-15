@@ -1,5 +1,4 @@
-open OcsfmlGraphics
-open OcsfmlWindow
+open OgamlGraphics
 open GuiTools
 open Widget
 open BaseMixins
@@ -23,7 +22,7 @@ class text_framed_item m_position m_size m_text
 
   method draw target lib = if self#active then begin
     let position = foi2D self#position in
-    new rectangle_shape ~size:(foi2D size) ~position
+    (* new rectangle_shape ~size:(foi2D size) ~position
       ~fill_color:(Color.rgba 0 0 0 0) ~outline_thickness:2.
       ~outline_color:theme.Theme.border_color ()
     |> target#draw;
@@ -32,7 +31,9 @@ class text_framed_item m_position m_size m_text
         left = fst position ;
         top = snd position ;
         width = float_of_int (fst size) ;
-        height = float_of_int (snd size) }
+        height = float_of_int (snd size) } *)
+        ()
+        (* TODO *)
   end
 
   method action = action ()
@@ -45,7 +46,7 @@ class ingame_popup ~m_position ~m_size ~m_theme ~m_text ~m_bar_height
 
     inherit [text_framed_item] widget_container as super
 
-    inherit key_ctrl_list KeyCode.Left KeyCode.Right
+    inherit key_ctrl_list OgamlCore.Keycode.Left OgamlCore.Keycode.Right
 
     inherit has_toolbar as toolbar
 
@@ -69,7 +70,7 @@ class ingame_popup ~m_position ~m_size ~m_theme ~m_text ~m_bar_height
 
     method draw target lib = if self#active then begin
       let active_widget = List.nth self#children self#selected in
-      new rectangle_shape ~fill_color:theme.Theme.default_color
+      (* new rectangle_shape ~fill_color:theme.Theme.default_color
         ~size:(foi2D (fst size, snd size+m_bar_height-2))
         ~position:(foi2D (fst self#position, snd self#position-m_bar_height+2))
         ~outline_thickness:2. ~outline_color:theme.Theme.border_color ()
@@ -85,16 +86,18 @@ class ingame_popup ~m_position ~m_size ~m_theme ~m_text ~m_bar_height
         top = float_of_int (snd position) ;
         width = float_of_int (fst size) ;
         height = float_of_int (snd size) };
-      List.iter (fun w -> w#draw target lib) self#children
+      List.iter (fun w -> w#draw target lib) self#children *)
+      ()
+      (* TODO *)
     end
 
   initializer
-    self#add_event(function
-      | Event.KeyPressed{ Event.code = KeyCode.Return ; _ }
-      | Event.KeyPressed{ Event.code = KeyCode.Space ; _ } ->
+    self#add_event(OgamlCore.(function
+      | Event.KeyPressed { Event.KeyEvent.key = Keycode.Return ; _ }
+      | Event.KeyPressed { Event.KeyEvent.key = Keycode.Space ; _ } ->
           nb_items <> 0 &&
           ((List.nth self#children self#selected)#action;
           true)
-      | _ -> false)
+      | _ -> false))
 
 end

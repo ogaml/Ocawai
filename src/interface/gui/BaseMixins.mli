@@ -1,6 +1,6 @@
 (** Mixins: widget bases / properties for the GUI to mix by inheritance *)
 
-open OcsfmlWindow
+open OgamlGraphics
 
 (** A mixin that represents widget containers *)
 class virtual ['a] widget_container : object
@@ -41,12 +41,12 @@ end
 
 (** A mixin that represents a keyboard-controlled list
   * The two parameters are the up/down keys *)
-class virtual key_ctrl_list : OcsfmlWindow.KeyCode.t ->
-  OcsfmlWindow.KeyCode.t -> object
+class virtual key_ctrl_list : OgamlCore.KeyCode.t ->
+  OgamlCore.KeyCode.t -> object
 
   val virtual mutable nb_items : int
 
-  method virtual add_event : (Event.t -> bool) -> unit
+  method virtual add_event : (OgamlCore.Event.t -> bool) -> unit
 
   method selected : int
 
@@ -68,6 +68,6 @@ class virtual has_toolbar : object
 
   val virtual mutable toolbar_text : string
 
-  method draw : OcsfmlGraphics.render_window -> TextureLibrary.t -> unit
+  method draw : Window.t -> TextureLibrary.t -> unit
 
 end

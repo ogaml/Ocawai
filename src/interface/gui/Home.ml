@@ -2,14 +2,14 @@ open Utils
 
 class virtual item = object(self)
 
-  method virtual draw : OcsfmlGraphics.render_window -> unit
+  method virtual draw : OgamlGraphics.Window.t -> unit
   method virtual position : float * float
 
   method x = fst self#position
   method y = snd self#position
 
   method holds_focus = false
-  method handle_key (key : OcsfmlWindow.KeyCode.t) = ()
+  method handle_key (key : OgamlCore.Keycode.t) = ()
 
 end
 
@@ -32,7 +32,7 @@ class virtual modal = object(self)
   val mutable holds_focus = false
 
   method holds_focus = holds_focus
-  method virtual handle_key : OcsfmlWindow.KeyCode.t -> unit
+  method virtual handle_key : OgamlCore.Keycode.t -> unit
 
 end
 
@@ -74,7 +74,7 @@ class screen items actionnables = object(self)
       | None -> false
       | Some o -> o#holds_focus
 
-  method draw (target : OcsfmlGraphics.render_window) =
+  method draw (target : OgamlGraphics.Window.t) =
 
     List.iter (fun i -> i#draw target) items ;
     List.iter (fun a -> a#draw target) actionnables
@@ -82,7 +82,7 @@ class screen items actionnables = object(self)
   method handle_key key =
     if self#focus_held then selected >? (fun o -> o#handle_key key)
     else key |>
-    OcsfmlWindow.KeyCode.(function
+    OgamlCore.Keycode.(function
       | Left -> self#left
       | Right -> self#right
       | Up -> self#up

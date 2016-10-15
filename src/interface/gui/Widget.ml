@@ -1,5 +1,5 @@
-open OcsfmlWindow
-open OcsfmlGraphics
+open OgamlGraphics
+open OgamlCore
 open Utils
 
 class virtual widget = object(self)
@@ -40,7 +40,7 @@ class virtual widget = object(self)
 
   method set_parent p = parent <- p
 
-  method virtual draw : render_window -> TextureLibrary.t -> unit
+  method virtual draw : Window.t -> TextureLibrary.t -> unit
 
   method toggle = active <- not active
 

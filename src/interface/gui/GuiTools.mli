@@ -15,6 +15,13 @@ val to_pixels : quantity -> int
   * prints [text] in [rectangle] ;
   * it supports multiline and in case the rectangle is too narrow,
   * the text is truncated (warning : it can even remain unprinted!) *)
-val rect_print : #OcsfmlGraphics.render_target -> string ->
-  OcsfmlGraphics.font -> OcsfmlGraphics.Color.t -> quantity -> quantity ->
-  alignment -> (float OcsfmlGraphics.rect) -> unit
+val rect_print : (module OgamlGraphics.RenderTarget.T with type t = 'a) ->
+                 'a ->
+                 string ->
+                 OgamlGraphics.font ->
+                 OgamlGraphics.Color.t ->
+                 quantity ->
+                 quantity ->
+                 alignment ->
+                 OgamlMath.FloatRect.t ->
+                 unit

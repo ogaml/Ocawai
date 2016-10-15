@@ -6,14 +6,14 @@
   * It has a [position] that represents its center *)
 class virtual item : object
 
-  method virtual draw : OcsfmlGraphics.render_window -> unit
+  method virtual draw : OgamlGraphics.Window.t -> unit
 
   method virtual position : float * float
   method x : float
   method y : float
 
   method holds_focus : bool
-  method handle_key : OcsfmlWindow.KeyCode.t -> unit
+  method handle_key : OgamlCore.Keycode.t -> unit
 
 end
 
@@ -49,7 +49,7 @@ class textured_item : string -> (float * float) -> object
 
   inherit item
 
-  method draw : OcsfmlGraphics.render_window -> unit
+  method draw : OgamlGraphics.Window.t -> unit
 
   method position : float * float
 
@@ -64,7 +64,7 @@ object
 
   method action : unit
 
-  method draw : OcsfmlGraphics.render_window -> unit
+  method draw : OgamlGraphics.Window.t -> unit
 
 end
 
@@ -73,8 +73,8 @@ end
   * TODO: Handle intro; outro; multiple textures and interpolators *)
 class screen : item list -> actionnable list -> object
 
-  method draw : OcsfmlGraphics.render_window -> unit
+  method draw : OgamlGraphics.Window.t -> unit
 
-  method handle_key : OcsfmlWindow.KeyCode.t -> unit
+  method handle_key : OgamlCore.Keycode.t -> unit
 
 end

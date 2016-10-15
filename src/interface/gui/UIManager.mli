@@ -4,7 +4,7 @@
 class ui_manager : object
 
   (** Returns true iff the event has been catched by one widget *)
-  method on_event : OcsfmlWindow.Event.t -> bool
+  method on_event : OgamlCore.Event.t -> bool
 
   (** Focus on a widget *)
   method focus : #Widget.widget -> unit
@@ -25,6 +25,6 @@ class ui_manager : object
   method rem_widget : #Widget.widget -> unit
 
   (** Draws the UI *)
-  method draw : OcsfmlGraphics.render_window -> TextureLibrary.t -> unit
+  method draw : OgamlGraphics.Window.t -> TextureLibrary.t -> unit
 
 end
