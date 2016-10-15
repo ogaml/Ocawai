@@ -2,7 +2,7 @@ open OgamlGraphics
 open Utils
 open GuiTools
 
-let font = Font.load "FreeSans.ttf"
+let font = Font.load "resources/fonts/FreeSans.ttf"
 
 
 let width  = 220.

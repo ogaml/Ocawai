@@ -4,7 +4,7 @@ open Widget
 open BaseMixins
 open Utils
 
-let my_font = Font.load "FreeSans.ttf"
+let my_font = Font.load "resources/fonts/FreeSans.ttf"
 
 class item ?enabled:(enabled = true) icon text (action : unit -> unit) =
   object(self)

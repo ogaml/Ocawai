@@ -4,7 +4,7 @@ open Home
 open GuiTools
 open Utils
 
-let font = Font.load "FreeSans.ttf"
+let font = Font.load "resources/fonts/FreeSans.ttf"
 
 let setter_width = 800.
 let setting_width = 300.

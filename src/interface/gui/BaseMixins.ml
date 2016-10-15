@@ -4,7 +4,7 @@ open GuiTools
 open Widget
 
 (* Put it in the theme ? *)
-let bold_font = Font.load "FreeSansBold.ttf"
+let bold_font = Font.load "resources/fonts/FreeSansBold.ttf"
 
 
 class virtual ['a] widget_container = object(self)
