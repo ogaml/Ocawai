@@ -398,7 +398,7 @@ let renderer = object(self)
       ~offset:(Vector2f.({x = -.x; y = -.y}))
       ~scale:(Vector2f.({x = f; y = f})) ()
 
-  method draw_gui (target : render_window)
+  method draw_gui (target : Window.t)
     (ui_manager : UIManager.ui_manager) =
     ui_manager#draw target texture_library
 
@@ -454,17 +454,17 @@ let renderer = object(self)
       (fun p -> if (foggy p) then self#draw_from_map target camera "fog" p ())
       (Position.square camera#top_left camera#bottom_right);
     (* Displaying minimap *)
-    data#minimap#draw target data#camera#cursor;
+    data#minimap#draw (module Window) target data#camera#cursor;
     (* Displaying case information *)
     let drawer s pos =
       self#draw_txr target s 
-        ?position:(Some pos) 
+        ~position:(Vector2f.({x = fst pos; y = snd pos}))
         ~size:(Vector2f.({x = 30.; y = 30.})) ()
     in
     let tile_drawer s pos =
       let set = TilesetLibrary.get_tileset tileset_library "tileset" in
       self#draw_direct_tile target set s
-        ~position:pos 
+        ~position:(Vector2f.({x = fst pos; y = snd pos}))
         ~scale:(Vector2f.({x = 30. /. 50.; y = 30. /. 50.})) ()
     in
     let is_foggy = foggy data#camera#cursor#position in
@@ -509,6 +509,7 @@ let renderer = object(self)
       Battlefield.get_tile data#map data#camera#cursor#position
     in
     data#case_info#draw
+      (module Window)
       target
       drawer
       tile_drawer
@@ -521,18 +522,18 @@ let renderer = object(self)
       s_tile ;
     (* Display resources *)
     let resources = string_of_int data#actual_player#get_value_resource in
-    GuiTools.(rect_print
-      target (resources ^ " flowers") font Color.white (Pix 30) (Pix 10) Right
-      { left = 20. ; top = 5. ; width = sizef.Vector2f.x -. 40. ; height = 100. }); 
+    GuiTools.(rect_print (module Window)
+      target (resources ^ " flowers") font (`RGB Color.RGB.white) (Pix 30) (Pix 10) Right
+      FloatRect.({ x = 20. ; y = 5. ; width = sizef.Vector2f.x -. 40. ; height = 100. })); 
     (* Display players turn *)
     let current = Updates.(match uphandle#current_turn with
       | Your_turn -> "Your turn"
       | Turn_of id -> Printf.sprintf "Turn of #%d" id
       | Nobody_s_turn -> ""
     ) in
-    GuiTools.(rect_print
-      target current font Color.white (Pix 30) (Pix 10) Right
-      { left = 20. ; top = sizef.Vector2f.y -. 50. ; width = sizef.Vector2f.x -. 40. ; height = 100. }); 
+    GuiTools.(rect_print (module Window)
+      target current font (`RGB Color.RGB.white) (Pix 30) (Pix 10) Right
+      FloatRect.({ x = 20. ; y = sizef.Vector2f.y -. 50. ; width = sizef.Vector2f.x -. 40. ; height = 100. }));
     (* Display speed of action *)
     let speed = uphandle#speed in
     if speed <> "normal" then

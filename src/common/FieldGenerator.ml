@@ -1,4 +1,5 @@
 open Position
+open OgamlUtils
 open Utils
 open Settings_t
 open Settings_engine_t
@@ -14,8 +15,9 @@ exception NoPath
 exception UnitsSpawnFail
 exception StructSpawnFail
 
-module GenLog = Log.Make (struct let section = "Generation" end)
+let info fmt = Log.info Log.stdout ("%s" ^^ fmt) "Generation : "
 
+let error fmt = Log.error Log.stdout ("%s" ^^ fmt) "Generation : "
 (* functions used to get the 4 or 8 direct neighbors of a position,
   as a position list or a tile list *)
 
@@ -703,11 +705,11 @@ let units_spawn m playerslist legit_spawns buildings =
   | 0 -> raise UnitsSpawnFail
   | n ->
     begin
-      GenLog.info "    attempt %d / %d : " (units_spawn_attempts - n +1) units_spawn_attempts;
+      info "    attempt %d / %d : " (units_spawn_attempts - n +1) units_spawn_attempts;
       try
         let (army,buildings,spawns) = positioning m playerslist legit_spawns buildings in
         let attempt = (m,army,spawns) in
-        GenLog.info "    armies spawned, checking... ";
+        info "    armies spawned, checking... ";
         flush_all();
         check_movement attempt;
         check_superposed_units attempt;
@@ -715,23 +717,23 @@ let units_spawn m playerslist legit_spawns buildings =
         (army,buildings)
       with
       | BadSpawnsSequence ->
-          GenLog.info "    Not enough spawns found";
+          info "    Not enough spawns found";
           units_spawn_aux (n-1)
       | NotEnoughPlace ->
-          GenLog.info "    Not enough space around spawn for army";
+          info "    Not enough space around spawn for army";
           units_spawn_aux (n-1)
       | InvalidPositioning ->
-          GenLog.info "    Unit placed on an area not coresponding to its movement modes";
+          info "    Unit placed on an area not coresponding to its movement modes";
           units_spawn_aux (n-1)
       | UnitsSuperposition ->
-          GenLog.info "    Units superposition";
+          info "    Units superposition";
           units_spawn_aux (n-1)
       | NoPath ->
-          GenLog.info "    No path between armies";
+          info "    No path between armies";
           units_spawn_aux (n-1)
     end
   in
-  GenLog.info "  Spawning armies ...";
+  info "  Spawning armies ...";
   units_spawn_aux units_spawn_attempts
 
 (* iterated tries to create structures *)
@@ -741,21 +743,21 @@ let create_structures m =
   | 0 -> raise StructSpawnFail
   | n ->
     begin
-      GenLog.info "    attempt %d / %d : " (structs_attempts - n +1) structs_attempts;
+      info "    attempt %d / %d : " (structs_attempts - n +1) structs_attempts;
       try
         let buildings = create_structs m in
-        GenLog.info "    structures spawn success";
+        info "    structures spawn success";
         buildings
         (* place here any checks on structures positioning*)
       with
       | StructSpawnFail ->
           raise StructSpawnFail
       | NotEnoughPlace ->
-          GenLog.info "    Not enough space for neutral buildings";
+          info "    Not enough space for neutral buildings";
           create_structures_aux (n-1)
     end
   in
-  GenLog.info "  Spawning structures ...";
+  info "  Spawning structures ...";
   create_structures_aux structs_attempts
 
 (* iterated tries to generate the map *)
@@ -763,11 +765,11 @@ let generate playerslist =
   let generate_attempts = Config.config#settings_engine.generate_attempts in
   let rec generate_aux = function
   | 0 ->
-    GenLog.error "generator failed, not enough tries? bad calling arguments?";
+    error "generator failed, not enough tries? bad calling arguments?";
     raise GeneratorFailure
   | n ->
     begin
-      GenLog.info "  attempt %d / %d : " (generate_attempts - n +1) generate_attempts;
+      info "  attempt %d / %d : " (generate_attempts - n +1) generate_attempts;
       try
         let m = 
           match Config.config#settings_engine.generation_method with
@@ -779,23 +781,23 @@ let generate playerslist =
         let nb = create_structures m in
         let (a,b) = units_spawn m playerslist (init_positioning m (List.length playerslist)) nb in
         let attempt = (m,a,b) in
-        GenLog.info "Generation success"(* place here any check on map generation*);
+        info "Generation success"(* place here any check on map generation*);
         attempt
       with
       | StructSpawnFail ->
-          GenLog.info "  structures spawn aborted";
+          info "  structures spawn aborted";
           generate_aux (n-1)
       | NotEnoughSpawns ->
-          GenLog.info "  Spawning armies ...";
-          GenLog.info "    not enough valid spawns";
-          GenLog.info "  armies spawn aborted";
+          info "  Spawning armies ...";
+          info "    not enough valid spawns";
+          info "  armies spawn aborted";
           generate_aux (n-1)
       | UnitsSpawnFail ->
-          GenLog.info "  armies spawn aborted";
+          info "  armies spawn aborted";
           generate_aux (n-1)
     end
   in
-  GenLog.info "Generating Battlefield ...";
+  info "Generating Battlefield ...";
   generate_aux generate_attempts
 
 

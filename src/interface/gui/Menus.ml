@@ -20,7 +20,7 @@ class item ?enabled:(enabled = true) icon text (action : unit -> unit) =
     (* First draw the icon *)
     let color = Color.(if enabled
       then `RGB RGB.white
-      else `RGB { .6 ; .6 ; .6 ; 1. }
+      else `RGB RGB.({ r = 0.6 ; g = 0.6 ; b = 0.6 ; a = 1. }))
     in
     let position = foi2D self#position in
     let (selfx, selfy) = foi2D size in

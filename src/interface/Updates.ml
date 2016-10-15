@@ -377,10 +377,10 @@ class handler data camera = object(self)
         begin match current_state with
         | Lost ->
             fade true "Game Over" ;
-            GuiTools.(rect_print
+            GuiTools.(rect_print (module Window)
               target "You can watch the other keep playing..."
-              font (Color.rgba 255 255 255 230) (Pix 30) (Pix 10) Center
-              { left = 0. ; top = 2. *. h /. 3. ; width = w ; height = 500. })
+              font (`RGB Color.RGB.{r = 1.0; g = 1.0; b = 1.0; a = 0.9}) (Pix 30) (Pix 10) Center
+              FloatRect.({ x = 0. ; y = 2. *. tsize.Vector2f.y /. 3. ; width = tsize.Vector2f.x ; height = 500. }))
         | Won -> fade true "You win!"
         | Playing -> ()
         end
