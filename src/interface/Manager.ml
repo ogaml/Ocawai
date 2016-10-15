@@ -54,13 +54,12 @@ let manager =
     if self#is_running then
     match Window.poll_event window with
     | Some e ->
-        OcsfmlWindow.Event.(
+        OgamlCore.Event.(
         begin match e with
-          | KeyPressed { code = c; _ } when Obj.magic c = -1 -> ()
           | Closed
-          | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; control = true ; _ }
-          | KeyPressed { code = OcsfmlWindow.KeyCode.C ; control = true ; _ } ->
-              window#close
+          | KeyPressed { KeyEvent.key = Keycode.Q ; control = true ; _ }
+          | KeyPressed { KeyEvent.key = Keycode.C ; control = true ; _ } ->
+              Window.close window
 
           | Resized _ -> ()
 
@@ -71,7 +70,7 @@ let manager =
 
   method run =
 
-    if not window#is_open then while self#is_running do self#pop done ;
+    if not (Window.is_open window) then while self#is_running do self#pop done ;
 
     if self#is_running then self#event_loop ;
     if self#is_running then

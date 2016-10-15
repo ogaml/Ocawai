@@ -10,7 +10,7 @@ val manager : <
   (** The method that is called every frame, runs the current state *)
   run : unit ;
   (** @Return the current window *)
-  window : OgamlGraphics.window;
+  window : OgamlGraphics.Window.t;
   (** Resets the window (for resizing) *)
   reset_window : unit ;
   (** Toogles fullscreen mode *)
