@@ -15,9 +15,10 @@ exception NoPath
 exception UnitsSpawnFail
 exception StructSpawnFail
 
-let info fmt = Log.info Log.stdout ("%s" ^^ fmt) "Generation : "
+let info fmt = OgamlUtils.(Log.info Log.stdout ("%s" ^^ fmt) "Generation : ")
+let error fmt = OgamlUtils.(Log.error Log.stdout ("%s" ^^ fmt) "Generation : ")
+let debug fmt = OgamlUtils.(Log.debug Log.stdout ("%s" ^^ fmt) "Generation : ")
 
-let error fmt = Log.error Log.stdout ("%s" ^^ fmt) "Generation : "
 (* functions used to get the 4 or 8 direct neighbors of a position,
   as a position list or a tile list *)
 
@@ -310,7 +311,7 @@ let seed_fill m =
   let width = Config.config#settings.map_width in
   let height = Config.config#settings.map_height in
   let nb_blank = width*height in(*
-    count 
+    count
       (fun _ -> true)
       (Battlefield.tile_filter (fun t -> Tile.get_name t = "blank") m)
   in*)
@@ -682,10 +683,10 @@ let create_buildings m =
     if ub#name = "port" then Battlefield.set_tile m pos (Config.config#tile "port_beach");
     b::(position ub (nb-1)))
   in
-  List.fold_left 
-    (fun l e -> 
-      poslist := Battlefield.tile_filteri 
-        (fun pos t -> 
+  List.fold_left
+    (fun l e ->
+      poslist := Battlefield.tile_filteri
+        (fun pos t ->
           not (List.mem pos !takenlist)
           && ((e#name <> "port" && (Tile.get_name t <> "beach" && Tile.get_name t <> "lake_beach") && List.for_all (Tile.traversable_m t) e#movement_types) || (e#name = "port" && (Tile.get_name t = "beach"|| Tile.get_name t = "lake_beach")))
         ) m;
@@ -771,7 +772,7 @@ let generate playerslist =
     begin
       info "  attempt %d / %d : " (generate_attempts - n +1) generate_attempts;
       try
-        let m = 
+        let m =
           match Config.config#settings_engine.generation_method with
           | `Dummy -> dummy_gen "plain"
           | `Swap -> swap_gen()
@@ -808,18 +809,18 @@ object (self)
   method armies = let _,a,_ = g in a
   method buildings = let _,_,b = g in b
   method neutral_buildings = let _,_,b = g in List.filter (fun bu -> bu#player_id = None) b
-  method cursor_init_positions = let _,a,b = g in 
-    let tbl = Hashtbl.create 10 in 
+  method cursor_init_positions = let _,a,b = g in
+    let tbl = Hashtbl.create 10 in
     match Config.config#settings_engine.cursor_init with
     | `Base ->
         List.iter
           (fun bu ->
             (match bu#player_id with
-            | Some a -> Hashtbl.add tbl a bu#position 
+            | Some a -> Hashtbl.add tbl a bu#position
             | None -> ())
           )
           (List.filter (fun bu -> bu#name = "base") b);tbl
-    | `Unit -> 
+    | `Unit ->
         let l = List.fold_left (fun l ua -> ua@l) [] a in
         let list_units = List.filter (fun u -> List.for_all (fun ub -> ub#position <> left u#position) l) l in
         List.iter
