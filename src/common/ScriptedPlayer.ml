@@ -1,3 +1,4 @@
+open OgamlUtils
 open Player
 
 let log_str output = `Fun(function
@@ -12,6 +13,8 @@ let log_int output = `Fun(function
 
 class scripted_player ?(id) (scr : string)  =
 
+  let () = Log.info Log.stdout "Creating player" in
+
   object (self)
 
   inherit player ?id:id ()
@@ -25,8 +28,14 @@ class scripted_player ?(id) (scr : string)  =
   val mutable playable_buildings = []
 
   initializer
+    Log.info Log.stdout "Initializing player";
+    Log.info Log.stdout "Getting player buildings";
     playable_buildings <- self#get_buildings;
-    output <- open_out (Printf.sprintf "log/player_%i.log" self#get_id)
+    Log.info Log.stdout "Creating player log";
+    let logname = Printf.sprintf "log/player_%i.log" self#get_id in
+    Log.info Log.stdout "Opening log";
+    output <- open_out logname;
+    Log.info Log.stdout "Done"
 
   method init_script map players =
     script <- ScriptEngine.script_from_file scr

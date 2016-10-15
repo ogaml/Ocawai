@@ -97,22 +97,31 @@ class game_engine () = object (self)
 
 
   method init_local player nbplayers =
+    info "Initializing game";
+    info "Creating players";
       let sc_players = self#create_n_scripted (nbplayers - 1) in
+    info "Done";
       players <-
         Array.init nbplayers (fun n ->
           if n = 0 then player
           else (List.nth sc_players (n-1) :> Player.player)
         );
+    info "Creating map";
       field <-
         Some (new FieldGenerator.t
           (self#get_players : Player.player list :> Player.logicPlayer list));
+    info "Retrieving map and players";
       let players, map =
         ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
       in
+    info "Initializing scripts";
       List.iter (fun p -> p#init_script map players) sc_players;
       actual_player_l <- actual_player_list nbplayers;
+    info "Initializing map";
       List.iter (fun x -> x#init map players) self#get_players;
+    info "Notifying players";
       self#notify_players;
+    info "Done";
       (players, map)
 
   (*method init_net port nbplayers =
@@ -247,7 +256,6 @@ class game_engine () = object (self)
       is_over <- true;
       players.(self#actual_player)#update (Types.You_win)
     end else if killed then ()
-    else self#run
 
   (* Capture buildings at the beginning of a turn *)
   method private capture_buildings =

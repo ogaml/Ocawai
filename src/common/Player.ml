@@ -152,7 +152,7 @@ class dummy_player ?(id) (a: Action.t list) =
     val mutable actions = (a: Action.t list)
 
     method get_next_action =
-      if length a == 0 then
+      if length actions == 0 then
         ([], Action.End_turn)
       else
         let action= hd(actions) in

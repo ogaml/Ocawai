@@ -29,7 +29,6 @@ let event_state () =
 let get_next_action () =
   client_state := ClientPlayer.Waiting ;
   let rec get_aux () =
-    Thread.delay 0.25;
     match !client_state with
     | ClientPlayer.Received a -> client_state := ClientPlayer.Idle ; a
     | _ -> get_aux ()
@@ -390,8 +389,8 @@ let new_game ?character () =
 
   initializer
     self#create_ui;
-    Thread.create (fun () -> m_engine#run) ()
-    |> ignore
+    (*Thread.create (fun () -> m_engine#run) ()
+    |> ignore*)
 
   val mutable last_event = 0.
   val mutable dir_key_pressed = false
@@ -572,6 +571,7 @@ let new_game ?character () =
 
   method render window =
 
+    m_engine#run;
     self#keyboard_events;
     Interpolators.update () ;
     Window.clear window;

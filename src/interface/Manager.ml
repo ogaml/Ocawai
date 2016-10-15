@@ -61,8 +61,6 @@ let manager =
           | KeyPressed { KeyEvent.key = Keycode.C ; control = true ; _ } ->
               Window.close window
 
-          | Resized _ -> ()
-
           | _ -> self#current#handle_event e
         end) ;
         self#event_loop
