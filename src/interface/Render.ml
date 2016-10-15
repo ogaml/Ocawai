@@ -94,7 +94,7 @@ let renderer = object(self)
     ?size
     ?color
     ?centered:(centered = true)
-    ?blend_mode () : unit =
+    ?blend_mode:(blend_mode = DrawParameter.BlendMode.alpha) () : unit =
     let texture = TextureLibrary.get_texture texture_library name in
     let tsize =  Vector2f.from_int (Texture.Texture2D.size texture) in
     let origin  =
@@ -122,7 +122,7 @@ let renderer = object(self)
         ~culling:CullingMode.CullNone
         ~depth_test:DepthTest.None
         ~depth_write:false
-        ?blend_mode
+        ~blend_mode
         ()
       )
     in
