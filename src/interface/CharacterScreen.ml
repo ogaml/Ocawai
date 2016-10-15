@@ -1,4 +1,7 @@
-open OcsfmlGraphics
+open OgamlGraphics
+open OgamlMath
+open OgamlUtils
+open OgamlCore
 open Utils
 open GuiTools
 
@@ -10,10 +13,13 @@ class state = object(self)
 
   val mutable screen = new Home.screen [] []
 
-  val font = Fonts.load_font "FreeSansBold.ttf"
+  val font = Font.load "resources/fonts/FreeSansBold.ttf"
 
-  method private set_screen w h =
-    let (w,h) = foi2D (w,h) in
+  method private set_screen size =
+    let (w,h) = 
+      Vector2f.from_int size
+      |> (fun v -> Vector2f.(v.x, v.y))
+    in
     screen <- new Home.screen
       []
       [
@@ -48,37 +54,40 @@ class state = object(self)
 
   method handle_event e =
 
-    OcsfmlWindow.Event.(
+    Event.(
       match e with
-        | Resized { width = w ; height = h } -> self#set_screen w h
-        | KeyPressed { code = kc ; _ } ->
+        | Resized size -> self#set_screen size
+        | KeyPressed { KeyEvent.key = kc ; _ } ->
             screen#handle_key kc
         | _ -> ()
     )
 
   method render window =
 
-    let color = Color.rgb 221 224 234 in
-    window#clear ~color ();
+    let color = `RGB Color.RGB.({r = 221. /. 255.; g = 224. /. 255.; b = 234. /. 255.; a = 1.0}) in
+    Window.clear ~color:(Some color) window;
 
-    let (w,h) = foi2D window#get_size in
+    let (w,h) = 
+      Window.size window
+      |> Vector2f.from_int
+      |> (fun v -> Vector2f.(v.x, v.y))
+    in
 
     rect_print
-      window "CHOOSE YOUR CHARACTER" font Color.black (Pix 70) (Pix 10) Center
-      { left = 10. ; top = 30. ; width = w -. 20. ; height = 100. };
+      (module Window) window "CHOOSE YOUR CHARACTER" font (`RGB Color.RGB.black) (Pix 70) (Pix 10) Center
+      FloatRect.({ x = 10. ; y = 30. ; width = w -. 20. ; height = 100. });
 
     rect_print
-      window "And choose wisely because it only changes the textures."
-      font (Color.rgba 0 0 0 100) (Pix 27) (Pix 10) Center
-      { left = 10. ; top = 95. ; width = w -. 20. ; height = 50. };
+      (module Window) window "And choose wisely because it only changes the textures."
+      font (`RGB Color.RGB.({r = 0.; g = 0.; b = 0.; a = 0.4})) (Pix 27) (Pix 10) Center
+      FloatRect.({ x = 10. ; y = 95. ; width = w -. 20. ; height = 50. });
 
     screen#draw window;
 
-    window#display
+    Window.display window
 
   initializer
     let window = manager#window in
-    let (w,h) = window#get_size in
-    self#set_screen w h
+    self#set_screen (Window.size window)
 
 end

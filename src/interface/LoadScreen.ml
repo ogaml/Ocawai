@@ -1,4 +1,6 @@
-open OcsfmlGraphics
+open OgamlGraphics
+open OgamlMath
+open OgamlUtils
 open Utils
 open GuiTools
 
@@ -8,7 +10,7 @@ class state (build : unit -> State.state) = object(self)
 
   inherit State.state as super
 
-  val font = (Fonts.load_font "FreeSansBold.ttf")
+  val font = (Font.load "resources/fonts/FreeSansBold.ttf")
 
   val mutable init = false
 
@@ -33,18 +35,23 @@ class state (build : unit -> State.state) = object(self)
 
     Interpolators.update ();
 
-    let color = Color.rgb 19 42 69 in
-    window#clear ~color ();
+    let color = Color.RGB.({r = 19./.255.; g = 42./.255.; b = 69./.255.; a = 1.0}) in
+    Window.clear window ~color:(Some (`RGB color));
 
-    let (w,h) = foi2D window#get_size in
+    let (w,h) = 
+      Window.size window 
+      |> Vector2f.from_int
+      |> (fun v -> Vector2f.(v.x, v.y))
+    in
 
     let text_color =
-      Color.rgba 255 255 255 (int_of_float (255. *. text_alpha)) in
+      Color.RGB.({r = 1.0; g = 1.0; b = 1.0; a = text_alpha})
+    in
     rect_print
-      window "LOADING" font text_color (Pix 120) (Pix 10) Center
-      { left = 0. ; top = h /. 2. -. 100. ; width = w ; height = 100. };
+      (module Window) window "LOADING" font (`RGB text_color) (Pix 120) (Pix 10) Center
+      FloatRect.({ x= 0. ; y = h /. 2. -. 100. ; width = w ; height = 100. });
 
-    window#display
+    Window.display window
 
   initializer
     ignore(Interpolators.new_sine_ip

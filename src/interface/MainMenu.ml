@@ -6,7 +6,7 @@ open GuiTools
 
 open Manager
 
-class main_menu window = object(self)
+class main_menu = object(self)
 
   inherit State.state as super
 
@@ -14,7 +14,7 @@ class main_menu window = object(self)
 
   val bg_texture = 
     Texture.Texture2D.create 
-      (module Window) window 
+      (module Window) manager#window 
       (`File ((Utils.base_path ()) ^ "textures/gui/capture.png"))
   val mutable bg_offset = (0.,0.)
   val mutable bg_dir = (0.,0.)
@@ -73,6 +73,9 @@ class main_menu window = object(self)
 
   method private set_screen wsize =
     let wsizef = Vector2f.from_int wsize in
+    let (w,h) = 
+      Vector2f.(wsizef.x, wsizef.y)
+    in
     screen <- new Home.screen
       [new Home.textured_item "title" (w/.2., h /. 2. -. 250.)]
       [
@@ -81,7 +84,7 @@ class main_menu window = object(self)
           (fun () -> new CharacterScreen.state |> manager#push) ;
         new Home.textured_actionnable "quit" "quit_hover"
           (w /. 2. -. 130., h /. 2. +. 230.)
-          (fun () -> manager#window#close) ;
+          (fun () -> Window.close manager#window) ;
         new Home.textured_actionnable "settings" "settings_hover"
           (w /. 2. +. 100., h /.2. +. 220.)
           (fun () -> new SettingsScreen.state |> manager#push) ;
@@ -111,15 +114,27 @@ class main_menu window = object(self)
     let color = `RGB Color.RGB.({r = 221. /. 255.; g = 224. /. 255.; b = 234. /. 255.; a = 1.0}) in
     Window.clear ~color:(Some color) window;
 
-    let wsize = Vector2f.from_int (Window.size window) in
-    let (tw,th) = Utils.foi2D bg_texture#get_size in
-    new sprite ~texture:bg_texture ~scale:(w *. 1.5 /. tw, h *. 1.5 /. th)
-      ~position:(subf2D (0.,0.) bg_offset) ()
-    |> window#draw;
+    let (w,h) = 
+      (Window.size window) 
+      |> Vector2f.from_int 
+      |> (fun v -> Vector2f.(v.x, v.y))
+    in
+    let (tw,th) = 
+      Texture.Texture2D.size bg_texture
+      |> Vector2f.from_int 
+      |> (fun v -> Vector2f.(v.x, v.y))
+    in
+    let sprite = 
+      Sprite.create
+        ~texture:bg_texture 
+        ~scale:Vector2f.({x = w *. 1.5 /. tw; y = h *. 1.5 /. th})
+        ~position:Vector2f.({x = -. (fst bg_offset); y = -. (snd bg_offset)}) ()
+    in
+    Sprite.draw (module Window) ~target:window ~sprite ();
 
     screen#draw window;
 
-    window#display
+    Window.display window
 
   method paused =
     music_run := false
@@ -131,7 +146,8 @@ class main_menu window = object(self)
     let window = manager#window in
     let wsize = Window.size window in 
     self#set_screen wsize; 
-    let music_player = MusicPlayer.music_player () in
-    ignore @@ Thread.create (music_player#play_menu) (music_run)
+    (* TODO *)
+    (*let music_player = MusicPlayer.music_player () in
+    ignore @@ Thread.create (music_player#play_menu) (music_run)*)
 
 end

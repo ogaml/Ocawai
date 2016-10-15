@@ -1,4 +1,6 @@
-open OcsfmlGraphics
+open OgamlGraphics
+open OgamlCore
+open OgamlMath
 open Utils
 open GuiTools
 
@@ -16,8 +18,8 @@ class state = object(self)
 
   inherit State.state as super
 
-  val font = Fonts.load_font "FreeSans.ttf"
-  val bold = Fonts.load_font "FreeSansBold.ttf"
+  val font = Font.load "resources/fonts/FreeSans.ttf"
+  val bold = Font.load "resources/fonts/FreeSansBold.ttf"
 
   val mutable off = 0.
 
@@ -27,23 +29,30 @@ class state = object(self)
 
   val mutable run = ref true
 
-  val mutable particles = new ParticleManager.particle_manager manager#window
+  (* TODO *)
+  (*val mutable particles = 
+    new ParticleManager.particle_manager manager#window*)
 
   method handle_event e =
-    OcsfmlWindow.Event.(
+    Event.(
       match e with
-      | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ }
-      | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; _ } ->
+      | KeyPressed { KeyEvent.key = Keycode.Escape ; _ }
+      | KeyPressed { KeyEvent.key = Keycode.Q ; _ } ->
           manager#pop
       | _ -> ()
     )
 
   method private print s b size top =
     let window = manager#window in
-    let (w,h) = foi2D window#get_size in
-    rect_print window s (if b then bold else font) Color.white
+    let (w,h) = 
+      Window.size window
+      |> Vector2f.from_int
+      |> (fun v -> Vector2f.(v.x, v.y))
+    in
+    rect_print (module Window) window s (if b then bold else font) 
+      (`RGB Color.RGB.white)
       (Pix size) (Pix 5) Center
-      { left = 10.; top = h -. 50. -. off +. top; width = w -. 20.; height = h }
+      FloatRect.({ x = 10.; y = h -. 50. -. off +. top; width = w -. 20.; height = h })
 
   method private title s top =
     self#print s true 30 top
@@ -70,23 +79,30 @@ class state = object(self)
           self#print "By the way, press escape to quit..." false 15 !top ;
           top := !top +. 20.
       | Break ->
-          let (_,h) = foi2D manager#window#get_size in
-          top := !top +. h /. 3.
+          let size = Window.size manager#window in
+          top := !top +. (float_of_int size.Vector2i.y) /. 3.
     in List.iter aux seq ;
     !top
 
   method render window =
 
-    particles#update;
+(* TODO *)
+(*     particles#update; *)
 
-    let color = Color.rgb 10 10 10 in
-    window#clear ~color ();
+    let color = Color.RGB.({r = 0.05; g = 0.05; b = 0.05; a = 1.0}) in 
+    Window.clear window ~color:(Some (`RGB color));
 
-    particles#render;
+(* TODO *)
+(*     particles#render; *)
 
-    let (sx, sy) = Utils.foi2D window#get_size in
+    let (sx,sy) = 
+      Window.size window
+      |> Vector2f.from_int
+      |> (fun v -> Vector2f.(v.x, v.y))
+    in
 
-    if Random.int 90 <= 1 && not finished then begin
+    (* TODO *)
+    (*if Random.int 90 <= 1 && not finished then begin
       let position = (Random.float sx, Random.float (sy /. 2.5)) in
       Booms.boom_circle particles
         (Random.float 200. +. 700.)
@@ -102,7 +118,7 @@ class state = object(self)
     Booms.continuous_fountain particles (sx, sy) (4.141592) 0.25 yellow;
 
     if finished then 
-      Booms.continuous_flower particles (sx /. 2., sy);
+      Booms.continuous_flower particles (sx /. 2., sy);*)
 
     let height = self#credits [
       OCAWAI ;
@@ -164,10 +180,11 @@ class state = object(self)
     else
       finished <- true;
 
-    window#display
+    Window.display window
 
-  initializer
-    ignore @@ Thread.create (MidiPlayer.play_midi_file "./resources/music/HymneToJoy.mid") run
+  (* TODO *)
+  (*initializer
+    ignore @@ Thread.create (MidiPlayer.play_midi_file "./resources/music/HymneToJoy.mid") run*)
 
   method destroy =
     run := false

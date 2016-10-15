@@ -18,7 +18,8 @@ B _build/src/interface/
 B _build/src/music/
 B _build/src/script/
 
+B +threads
+
 PKG ogaml.graphics
 PKG yojson
 PKG atdgen
-

@@ -1,4 +1,7 @@
-open OcsfmlGraphics
+open OgamlGraphics
+open OgamlCore
+open OgamlMath
+open OgamlUtils
 open Utils
 open GuiTools
 open Settings_interface_t
@@ -11,10 +14,11 @@ class state = object(self)
 
   val mutable screen = new Home.screen [] []
 
-  val font = Fonts.load_font "FreeSansBold.ttf"
+  val font = Font.load "resources/fonts/FreeSansBold.ttf"
 
-  method private set_screen w h =
-    let (w,h) = foi2D (w,h) in
+  method private set_screen size =
+    let sizef = Vector2f.from_int size in
+    let (w,h) = Vector2f.(sizef.x, sizef.y) in
     screen <- new Home.screen
       []
       [
@@ -28,17 +32,19 @@ class state = object(self)
           (fun i ->
             Config.config#settings_interface.zoom_speed <- (1. +. (50. /. 9.) *. (float_of_int i)))
           "Zoom speed" :> Home.actionnable) ;
-        (new Setters.slider (w /. 2., 150. +. 2. *. Setters.setter_height)
+        (* TODO *)
+        (*(new Setters.slider (w /. 2., 150. +. 2. *. Setters.setter_height)
           ~default: (int_of_float (Sounds.get_volume ()))
           (fun i ->
             Sounds.play_sound "click";
             Sounds.set_volume (float_of_int i))
-            "Sounds volume" :> Home.actionnable) ;
-        (new Setters.slider (w /. 2., 150. +. 3. *. Setters.setter_height)
+            "Sounds volume" :> Home.actionnable) ;*)
+        (* TODO *)
+        (*(new Setters.slider (w /. 2., 150. +. 3. *. Setters.setter_height)
           ~default: (MidiPlayer.get_volume ())
           (fun i ->
             MidiPlayer.set_volume i)
-            "Music volume" :> Home.actionnable) ;
+            "Music volume" :> Home.actionnable) ;*)
         (new Setters.toogle (w /. 2., 150. +. 4. *. Setters.setter_height)
           "Fullscreen"
           ~default: true
@@ -49,32 +55,32 @@ class state = object(self)
 
   method handle_event e =
 
-    OcsfmlWindow.Event.(
+    Event.(
       match e with
-        | KeyPressed { code = kc ; _ } ->
+        | KeyPressed { KeyEvent.key = kc ; _ } ->
             screen#handle_key kc
         | _ -> ()
     )
 
   method render window =
 
-    let color = Color.rgb 221 224 234 in
-    window#clear ~color ();
+    let color = `RGB Color.RGB.({r = 221. /. 255.; g = 224. /. 255.; b = 234. /. 255.; a = 1.0}) in
+    Window.clear ~color:(Some color) window;
 
-    let (w,h) = foi2D window#get_size in
+    let wsize = Vector2f.from_int (Window.size window) in
 
     rect_print
-      window "SETTINGS" font Color.black (Pix 70) (Pix 10) Left
-      { left = 10. ; top = 10. ; width = w -. 20. ; height = 100. };
+      (module Window) window "SETTINGS" font (`RGB Color.RGB.black) (Pix 70) (Pix 10) Left
+      FloatRect.({ x = 10. ; y = 10. ; width = wsize.Vector2f.x -. 20. ; height = 100. });
 
     screen#draw window;
 
-    window#display
+    Window.display window
 
   initializer
     let window = manager#window in
-    let (w,h) = window#get_size in
-    self#set_screen w h
+    let wsize = Window.size window in
+    self#set_screen wsize
 
   method destroy =
     ()

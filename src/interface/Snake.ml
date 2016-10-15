@@ -1,4 +1,7 @@
-open OcsfmlGraphics
+open OgamlGraphics
+open OgamlCore
+open OgamlUtils
+open OgamlMath
 open Utils
 open GuiTools
 
@@ -8,7 +11,7 @@ class state = object(self)
 
   inherit State.state as super
 
-  val font = Fonts.load_font "FreeSansBold.ttf"
+  val font = Font.load "resources/fonts/FreeSansBold.ttf"
 
   val map = Array.make_matrix 16 10 false
   val goods = Array.make_matrix 16 10 false
@@ -60,7 +63,7 @@ class state = object(self)
 
   method private handle_keys =
     let act_time = Unix.gettimeofday () in
-    if act_time -. last_event >= 0.1 then OcsfmlWindow.(
+    if act_time -. last_event >= 0.1 then (
       last_event <- act_time;
       self#move;
       let p = Random.int 100 in
@@ -73,15 +76,25 @@ class state = object(self)
     )
 
   method private topos pos =
-    let (w,h) = foi2D manager#window#get_size in
+    let (w,h) = 
+      Window.size manager#window
+      |> Vector2f.from_int
+      |> (fun v -> Vector2f.(v.x, v.y))
+    in
     let dx = w /. 2. -. 400. +. 25.
     and dy = h /. 2. -. 250. +. 25. in
     let (x,y) = foi2D (Position.topair pos) in
     (x *. 50. +. dx, y *. 50. +. dy)
 
-  method private draw_path (target : OcsfmlGraphics.render_window) path =
-    let draw pos rot name = Render.renderer#draw_txr target name
-    ~position:(self#topos pos) ~rotation:rot () in
+  method private draw_path (target : Window.t) path =
+    let draw pos rot name = 
+      let position = 
+        let (x,y) = self#topos pos in
+        Vector2f.({x;y})
+      in
+      Render.renderer#draw_txr target name
+        ~position ~rotation:rot () 
+    in
     let angle s t =
       match Position.diff t s with
         | pos when pos = Position.create (1,0)  -> 0.
@@ -116,9 +129,9 @@ class state = object(self)
 
   method handle_event e =
 
-    OcsfmlWindow.Event.(
+    Event.(
       match e with
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.Space ; _ } ->
             if not running then begin
               for i = 0 to 15 do
                 for j = 0 to 9 do
@@ -133,73 +146,80 @@ class state = object(self)
               size <- 5;
               running <- true
             end
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.Right ; _ } ->
             if last_move = (-1,0) then ()
             else move_dir <- (1,0)
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.Left ; _ } ->
             if last_move = (1,0) then ()
             else move_dir <- (-1,0)
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.Up ; _ } ->
             if last_move = (0,1) then ()
             else move_dir <- (0,-1)
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.Down ; _ } ->
             if last_move = (0,-1) then ()
             else move_dir <- (0,1)
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ }
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.Escape ; _ }
+        | KeyPressed { KeyEvent.key = Keycode.Q ; _ } ->
             manager#pop
         | _ -> ()
     )
 
   method render window =
 
-    let color = Color.rgb 19 42 69 in
-    window#clear ~color ();
+    let color = `RGB Color.RGB.({r = 19. /. 255.; g = 42. /. 255.; b = 69. /. 255.; a = 1.0}) in
+    Window.clear ~color:(Some color) window;
 
-    let (w,h) = foi2D window#get_size in
+    let (w,h) = 
+      Window.size manager#window
+      |> Vector2f.from_int
+      |> (fun v -> Vector2f.(v.x, v.y))
+    in
 
     (* Bounding area *)
-    new rectangle_shape
-      ~size: (800.,500.)
-      ~outline_color: Color.red
-      ~outline_thickness: 5.
-      ~position:(w /. 2., h /. 2.)
-      ~origin: (400.,250.)
-      ~fill_color: color
-      ()
-    |> window#draw;
-
+    let rectangle = 
+      Shape.create_rectangle
+        ~position:(Vector2f.prop 0.5 (Vector2f.from_int (Window.size window)))
+        ~size:Vector2f.({x = 800.; y = 500.})
+        ~border_color:(`RGB Color.RGB.red)
+        ~thickness:5.
+        ~origin:Vector2f.({x = 400.; y = 250.})
+        ~color
+        ()
+    in
+    Shape.draw (module Window) ~target:window ~shape:rectangle ();
     self#draw_path window (List.rev snake);
 
     (* Drawing candies *)
     for x = 0 to 15 do
       for y = 0 to 9 do
         if goods.(x).(y) then
-          let pos = self#topos (Position.create (x,y)) in
-          Render.renderer#draw_txr window "flatman_infantry" ~position:pos ~rotation:(Random.float 360.) ()
+          let (x,y) = self#topos (Position.create (x,y)) in
+          let position = Vector2f.({x;y}) in
+          Render.renderer#draw_txr window "flatman_infantry" ~position ~rotation:(Random.float 360.) ()
       done
     done;
 
     if running then
       self#handle_keys
     else begin
-      rect_print
-        window "GAME OVER" font Color.white (Pix 120) (Pix 10) Center
-        { left = 0. ; top = h /. 2. -. 100. ; width = w ; height = 100. };
-      rect_print
+      rect_print (module Window)
+        window "GAME OVER" font (`RGB Color.RGB.white) (Pix 120) (Pix 10) Center
+        FloatRect.({ x = 0. ; y = h /. 2. -. 100. ; width = w ; height = 100. });
+      rect_print (module Window)
         window "Press space to continue, q to quit."
-        font Color.white (Pix 50) (Pix 10) Center
-        { left = 0. ; top = h /. 2. +. 185. ; width = w ; height = 100. };
+        font (`RGB Color.RGB.white) (Pix 50) (Pix 10) Center
+        FloatRect.({ x = 0. ; y = h /. 2. +. 185. ; width = w ; height = 100. });
     end;
 
-    window#display
+    Window.display window 
 
   initializer
     Random.self_init ();
-    Sounds.play_sound "lets_do_this";
+    (* TODO *)
+    (*Sounds.play_sound "lets_do_this";
     let tetris_path = (Utils.base_path ()) ^ "music/tetris.mid" in
     musicThread <-
-      Some (Thread.create (fun x -> Thread.delay 1. ; MidiPlayer.play_midi_file tetris_path x) runMusic)
+      Some (Thread.create (fun x -> Thread.delay 1. ; MidiPlayer.play_midi_file tetris_path x) runMusic)*)
 
 
   method destroy =

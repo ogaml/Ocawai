@@ -1,5 +1,8 @@
 
-open OcsfmlGraphics
+open OgamlGraphics
+open OgamlUtils
+open OgamlCore
+open OgamlMath
 open Utils
 
 open Manager
@@ -45,13 +48,15 @@ let new_game ?character () =
 
   let (m_players, m_map) = m_engine#init_local (my_player :> player) 3 in
 
-  let m_camera = new Camera.camera
-    ~def_tile_size:50
-    ~w:manager#window#get_width ~h:manager#window#get_height
-    ~initpos:(m_engine#cursor_init_position (my_player :> player)#get_id)
-    ~maxpos:(Position.diff
-      (Position.create (Battlefield.size m_map))
-      (Position.create (1,1)))
+  let m_camera = 
+    let wsize = Window.size manager#window in
+    new Camera.camera
+      ~def_tile_size:50
+      ~w:wsize.Vector2i.x ~h:wsize.Vector2i.y
+      ~initpos:(m_engine#cursor_init_position (my_player :> player)#get_id)
+      ~maxpos:(Position.diff
+        (Position.create (Battlefield.size m_map))
+        (Position.create (1,1)))
   in
 
   let m_uphandle = new Updates.handler m_cdata m_camera in
@@ -185,9 +190,10 @@ let new_game ?character () =
           else p#copy)
         m_players) ;
     (** Run music *)
-    Mood.init cdata;
-    let music_player = MusicPlayer.music_player () in
-    ignore @@ Thread.create (music_player#play_game) (music_run);
+    (* TODO *)
+(*     Mood.init cdata; *)
+(*     let music_player = MusicPlayer.music_player () in *)
+(*     ignore @@ Thread.create (music_player#play_game) (music_run); *)
 
     cdata#init_buildings m_engine#get_neutral_buildings;
     cdata#init_interface m_camera
@@ -255,15 +261,17 @@ let new_game ?character () =
 
   method private create_ui =
     (* Main ingame menu *)
+    let wsize = Window.size manager#window in
+    let (w,h) = Vector2i.(wsize.x, wsize.y) in
     let my_menu = new ingame_menu
-      ~m_position:(manager#window#get_width / 2 - 75, 30) ~m_width:150
+      ~m_position:(w / 2 - 75, 30) ~m_width:150
       ~m_item_height:30 ~m_theme:Theme.blue_theme
       ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Menu" () in
 
     (* Forfeit confirmation popup *)
     let forfeit_popup = new Windows.ingame_popup
-      ~m_position:(manager#window#get_width / 2 - 200,
-        manager#window#get_height / 2 - 80)
+      ~m_position:(w / 2 - 200,
+        h / 2 - 80)
       ~m_size:(400, 110) ~m_theme:Theme.blue_theme
       ~m_text:("Do you really want to forfeit ? The game will be considered "
                 ^ "lost...")
@@ -282,8 +290,8 @@ let new_game ?character () =
 
     (* Button to open ingame menu *)
     let main_button = new key_button ~icon:"return"
-      ~text:"Menu" ~m_size:(150, 30) ~keycode:(OcsfmlWindow.KeyCode.Return)
-      ~m_position:(manager#window#get_width / 2 - 75, 0)
+      ~text:"Menu" ~m_size:(150, 30) ~keycode:(Keycode.Return)
+      ~m_position:(w / 2 - 75, 0)
       ~callback:(fun () -> ())
       ~m_theme:Theme.blue_theme
     in
@@ -391,81 +399,81 @@ let new_game ?character () =
   method private keyboard_events =
     let act_time = Unix.gettimeofday () in
     if (not ui_manager#is_focusing) &&
-     act_time -. last_event >= 0.05 then OcsfmlWindow.(
+     act_time -. last_event >= 0.05 then Window.(
       last_event <- act_time;
-      if Keyboard.is_key_pressed KeyCode.Right ||
-         Keyboard.is_key_pressed KeyCode.Left  ||
-         Keyboard.is_key_pressed KeyCode.Up    ||
-         Keyboard.is_key_pressed KeyCode.Down  then
+      if Keyboard.is_pressed Keycode.Right ||
+         Keyboard.is_pressed Keycode.Left  ||
+         Keyboard.is_pressed Keycode.Up    ||
+         Keyboard.is_pressed Keycode.Down  then
           dir_key_pressed <- true
       else
           dir_key_pressed <- false;
-      if Keyboard.is_key_pressed KeyCode.Right then
+      if Keyboard.is_pressed Keycode.Right then
         camera#move (1,0);
-      if Keyboard.is_key_pressed KeyCode.Left then
+      if Keyboard.is_pressed Keycode.Left then
         camera#move (-1,0);
-      if Keyboard.is_key_pressed KeyCode.Up then
+      if Keyboard.is_pressed Keycode.Up then
         camera#move (0,-1);
-      if Keyboard.is_key_pressed KeyCode.Down then
+      if Keyboard.is_pressed Keycode.Down then
         camera#move (0,1);
-      if Keyboard.is_key_pressed KeyCode.Z then
+      if Keyboard.is_pressed Keycode.Z then
         camera#set_zoom (camera#zoom *. 1.1);
-      if Keyboard.is_key_pressed KeyCode.A then
+      if Keyboard.is_pressed Keycode.A then
         camera#set_zoom (camera#zoom *. 0.90909)
     )
 
   method handle_event e =
-    if not (ui_manager#on_event e) then OcsfmlWindow.Event.(
+    if not (ui_manager#on_event e) then Event.(
       begin match e with
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Left; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.Left; _ } ->
             if not dir_key_pressed then begin
               camera#move (-1,0);
               last_event <- Unix.gettimeofday() +. 0.2
             end
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Up; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.Up; _ } ->
             if not dir_key_pressed then begin
               camera#move (0,-1);
               last_event <- Unix.gettimeofday() +. 0.2
             end
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Right; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.Right; _ } ->
             if not dir_key_pressed then begin
               camera#move (1,0);
               last_event <- Unix.gettimeofday() +. 0.2
             end
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Down; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.Down; _ } ->
             if not dir_key_pressed then begin
               camera#move (0,1);
               last_event <- Unix.gettimeofday() +. 0.2
             end
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Num0 ; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.Num0 ; _ } ->
             camera#set_zoom 1.
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.M ; _ } ->
             camera#toggle_zoom
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.S ; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.S ; _ } ->
             uphandle#slower
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.D ; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.D ; _ } ->
             uphandle#faster
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.X ; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.X ; _ } ->
             self#select_next
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.W ; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.W ; _ } ->
             self#select_pred
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.P ; _ } ->
+        (*| KeyPressed { KeyEvent.key = Keycode.P ; _ } ->
             manager#window#capture 
             |> fun i -> i#save_to_file (Printf.sprintf "screenshot_%f.png"
               (Unix.gettimeofday ()))
-            |> ignore
+            |> ignore*)
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
+        | KeyPressed { KeyEvent.key = Keycode.Space ; _ } when
             event_state () = ClientPlayer.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
@@ -557,7 +565,7 @@ let new_game ?character () =
                   ui_manager#focus atk_menu
               | _ -> ())
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
+        | KeyPressed { KeyEvent.key = Keycode.Escape ; _ } ->
             cdata#camera#cursor#set_state Cursor.Idle
         | _ -> ()
       end)
@@ -566,7 +574,7 @@ let new_game ?character () =
 
     self#keyboard_events;
     Interpolators.update () ;
-    window#clear ();
+    Window.clear window;
 
     cdata#minimap#compute cdata#map cdata#players;
 
@@ -574,7 +582,7 @@ let new_game ?character () =
     Render.renderer#render_game window cdata uphandle;
     Render.renderer#draw_gui window ui_manager;
 
-    window#display
+    Window.display window
 
   method destroy =
     music_run := false
