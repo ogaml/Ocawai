@@ -1,4 +1,6 @@
-open OcsfmlGraphics
+open OgamlGraphics
+open OgamlMath
+open OgamlUtils
 
 exception Tileset_error of string
 
@@ -51,7 +53,7 @@ class tileset texture config =
 
     val coordinates = Hashtbl.create 13 
 
-    val vao = new vertex_array ~primitive_type:Quads []
+    val source = VertexArray.VertexSource.empty ()
 
     initializer
       List.iteri (fun i s ->
@@ -62,7 +64,7 @@ class tileset texture config =
 
     method tile_size = size
 
-    method texture : OcsfmlGraphics.texture = texture
+    method texture : OgamlGraphics.Texture.Texture2D.t = texture
 
     method texture_coords s = 
       try
@@ -76,15 +78,15 @@ class tileset texture config =
       {xmin = cx; ymin = cy; xmax = cx +. s; ymax = cy +. s}
 
     method int_rect s = 
-      let fr_to_ir r = OcsfmlGraphics.IntRect.(
-        {left   = int_of_float r.xmin; 
-        top    = int_of_float r.ymin;
-        width  = int_of_float (r.xmax -. r.xmin);
-        height = int_of_float (r.ymax -. r.ymin)})
+      let fr_to_ir r = OgamlMath.IntRect.(
+        {x = int_of_float r.xmin; 
+         y = int_of_float r.ymin;
+         width  = int_of_float (r.xmax -. r.xmin);
+         height = int_of_float (r.ymax -. r.ymin)})
       in
       fr_to_ir (self#texture_rect s)
 
-    method vao = vao
+    method source = source
 
 end
 

@@ -1,4 +1,6 @@
-open OcsfmlGraphics
+open OgamlGraphics
+open OgamlMath
+open OgamlUtils
 open Utils
 open Tileset
 
@@ -8,17 +10,14 @@ let renderer = object(self)
 
   val tileset_library = TilesetLibrary.create ()
 
-  val font = Fonts.load_font "FreeSansBold.ttf"
+  val font = Font.load (Utils.base_path () ^ "fonts/FreeSansBold.ttf")
 
-  val mutable rect_vao = new vertex_array ~primitive_type:Quads []
+  val mutable rect_source = VertexArray.VertexSource.empty () 
 
-  method init =
+  method init win =
     let folder = (Utils.base_path ()) ^ "textures/" in
-    TextureLibrary.load_directory texture_library (folder);
-    TilesetLibrary.load_directory tileset_library (folder);
-
-    (* Recreate-it after having initialized the window *)
-    rect_vao <- new vertex_array ~primitive_type:Quads []
+    TextureLibrary.load_directory win texture_library (folder);
+    TilesetLibrary.load_directory win tileset_library (folder)
 
   (* Returns true iff p is in the map *)
   method private filter_positions map p =
@@ -306,10 +305,10 @@ let renderer = object(self)
       ~offset:(Utils.subf2D (0.,0.) camera#cursor#offset)
       ~scale:(camera#cursor#scale, camera#cursor#scale) ()
 
-  (* Draw the GUI *)
-  method draw_gui (target : render_window)
+  (* TODO Draw the GUI *)
+  (*method draw_gui (target : render_window)
     (ui_manager : UIManager.ui_manager) =
-    ui_manager#draw target texture_library
+    ui_manager#draw target texture_library*)
 
   (* Draw the whole game *)
   method render_game (target : render_window)

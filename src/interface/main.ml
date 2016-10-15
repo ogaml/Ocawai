@@ -2,14 +2,9 @@
 
 open Manager
 
-(* Helps compiling doc -- to be removed ! *)
-open TPTM
-open PrioQueue
-
 let () = begin
 
-  (* (new Game.game :> State.state) |> Manager.manager#push ; *)
-  (new MainMenu.main_menu :> State.state) |> manager#push ;
+(*   TODO (new MainMenu.main_menu :> State.state) |> manager#push ; *)
   manager#run;
   Config.config#save_all
 end

@@ -1,8 +1,8 @@
 class virtual state = object(self)
 
-  method virtual render : OcsfmlGraphics.render_window -> unit
+  method virtual render : OgamlGraphics.Window.t -> unit
 
-  method handle_event (e : OcsfmlWindow.Event.t) = ()
+  method handle_event (e : OgamlCore.Event.t) = ()
 
   method resumed = ()
 

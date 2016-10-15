@@ -4,10 +4,10 @@
 class virtual state : object
 
   (** Method ran every frame by the state manager *)
-  method virtual render : OcsfmlGraphics.render_window -> unit
+  method virtual render : OgamlGraphics.Window.t -> unit
 
   (** Method called on very event transmitted by the manager *)
-  method handle_event : OcsfmlWindow.Event.t -> unit
+  method handle_event : OgamlCore.Event.t -> unit
 
   (** Run when no longer on top of the stack *)
   method paused : unit

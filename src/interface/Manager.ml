@@ -1,40 +1,37 @@
-let manager = object(self)
+open OgamlGraphics
+open OgamlCore
+
+let manager = 
+
+  let window : OgamlGraphics.Window.t =
+    let settings = 
+      ContextSettings.create
+        ~depth:0
+        ~fullscreen:true ()
+    in
+    Window.create ~width:800 ~height:600 ~title:"OCAWAI" ~settings ()
+  in
+
+  object(self)
 
   val mutable states : State.state list = []
   val mutable fullscreen = true
-  val mutable window : OcsfmlGraphics.render_window =
-    if Array.length (OcsfmlWindow.VideoMode.get_full_screen_modes ()) <> 0 then begin
-      new OcsfmlGraphics.render_window
-                (OcsfmlWindow.VideoMode.get_desktop_mode ())
-                ~style:[OcsfmlWindow.Window.Fullscreen]
-                "OCAWAI"
-    end else begin
-      new OcsfmlGraphics.render_window
-                (OcsfmlWindow.VideoMode.create ~w:800 ~h:600 ())
-                "OCAWAI"
-    end
+  val mutable window = window
 
   initializer
-    Render.renderer#init;
-    Sounds.load_sounds ();
-    window#set_key_repeat_enabled true;
-    window#set_framerate_limit 60
+    Render.renderer#init window
+(*    TODO Sounds.load_sounds () *)
 
-  method window : OcsfmlGraphics.render_window = window
+  method window : OgamlGraphics.Window.t = window
 
   method reset_window =
-    window#close ;
-    if fullscreen then
-      window#create
-      ~style: [OcsfmlWindow.Window.Fullscreen]
-      (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
-      "OCAWAI"
-    else
-      window#create
-      (OcsfmlWindow.VideoMode.create ~w:800 ~h:600 ())
-      "OCAWAI" ;
-    window#set_key_repeat_enabled true ;
-    window#set_framerate_limit 60
+    Window.destroy window;
+    let settings = 
+      ContextSettings.create
+        ~depth:0
+        ~fullscreen ()
+    in
+    window <- Window.create ~width:800 ~height:600 ~title:"OCAWAI" ~settings ()
 
   method set_fullscreen b =
     fullscreen <- b ;
@@ -43,7 +40,6 @@ let manager = object(self)
   method push (state : State.state) =
     if self#is_running then self#current#paused ;
     states <- state :: states
-
 
   method pop =
     self#current#destroy ;
@@ -56,7 +52,7 @@ let manager = object(self)
 
   method event_loop =
     if self#is_running then
-    match window#poll_event with
+    match Window.poll_event window with
     | Some e ->
         OcsfmlWindow.Event.(
         begin match e with

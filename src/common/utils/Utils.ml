@@ -30,11 +30,6 @@ let init_string n f =
     s.[i] <- f i
   done; s
 
-let () =
-  Log.set_log_level Log.INFO;
-  Log.set_output stdout;
-  Log.color_on()
-
 let base_path () =
   try
     if Sys.is_directory "./resources/" then "./resources/" else "/usr/share/GL_2014/"
