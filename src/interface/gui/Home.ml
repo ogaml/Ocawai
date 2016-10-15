@@ -41,6 +41,9 @@ class textured_item name position = object(self)
   inherit item
 
   method draw target =
+    let position =
+      let (x,y) = position in OgamlMath.Vector2f.({ x ; y })
+    in
     Render.renderer#draw_txr target name ~position ()
 
   method position = position
@@ -55,6 +58,9 @@ class textured_actionnable txr txr_hover position (action : unit -> unit) = obje
   method action = action ()
 
   method draw target =
+    let position =
+      let (x,y) = position in OgamlMath.Vector2f.({ x ; y })
+    in
     if has_focus then Render.renderer#draw_txr target txr_hover ~position () ;
     super#draw target
 
