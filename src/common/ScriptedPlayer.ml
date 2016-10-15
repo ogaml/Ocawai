@@ -82,7 +82,6 @@ class scripted_player ?(id) (scr : string)  =
         ([], Action.End_turn)
 
   method get_next_action =
-    Thread.delay 0.10;
     if self#has_playable_unit then
       self#get_next_movement
     else if playable_buildings <> [] then

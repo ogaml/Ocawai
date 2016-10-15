@@ -175,12 +175,13 @@ class game_engine () = object (self)
     )
 
   method run : unit =
-    info "One step (%d)..." self#actual_player ;
     let player = players.(self#actual_player) in
 
     let next_wanted_action = player#get_next_action in
 
-    begin try
+    if snd next_wanted_action = Action.None_ then () 
+
+    else begin try
       let next_action = Logics.try_next_action
             (self#get_players :> Player.logicPlayer list)
             (player :> Player.logicPlayer)

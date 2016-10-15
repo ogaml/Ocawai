@@ -31,7 +31,7 @@ let get_next_action () =
   let rec get_aux () =
     match !client_state with
     | ClientPlayer.Received a -> client_state := ClientPlayer.Idle ; a
-    | _ -> get_aux ()
+    | _ -> ([], Action.None_)
   in get_aux ()
 
 

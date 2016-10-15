@@ -12,6 +12,7 @@ type action =
 | Create_unit of (Building.building_id * Unit.unbound_t)
 | Wait
 | End_turn
+| None_
 
 (** Type use to move a unit*)
 type t = movement * action

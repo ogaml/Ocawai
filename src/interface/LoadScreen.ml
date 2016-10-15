@@ -22,16 +22,16 @@ class state (build : unit -> State.state) = object(self)
   method render window =
 
     (* On first render we load in parallel the other screen *)
-    if not init then begin
+    (*if not init then begin
       let _ =
         Thread.create
           (fun () ->
-            try let s = build () in manager#pop ; manager#push s
+            try let s = build () in print_endline "----- OK -----"; manager#pop ; manager#push s
             with
             | Config.Missing_config(msg) as e-> manager#pop ;manager#pop ; raise e
             | e -> manager#pop ; raise e) ()
         in init <- true
-    end;
+    end;*)
 
     Interpolators.update ();
 
@@ -51,7 +51,13 @@ class state (build : unit -> State.state) = object(self)
       (module Window) window "LOADING" font (`RGB text_color) (Pix 120) (Pix 10) Center
       FloatRect.({ x= 0. ; y = h /. 2. -. 100. ; width = w ; height = 100. });
 
-    Window.display window
+    Window.display window;
+
+    let s = build () in
+
+    manager#pop; 
+
+    manager#push s
 
   initializer
     ignore(Interpolators.new_sine_ip
