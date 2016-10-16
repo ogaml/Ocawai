@@ -43,7 +43,7 @@ class virtual setter pos name = object(self)
       target name font
       (Color.(`RGB RGB.({ r = 0.25 ; g = 0.25 ; b = 0.25 ; a = 1. })))
       (Pix 20) (Pix 2) Left OgamlMath.FloatRect.({
-        x = fst self#position +. 20. -. 400. ;
+        x = fst self#position -. 140. ;
         y = snd self#position +. 10. -. 20. ;
         width = setter_width -. setting_width -. 4. ;
         height = setter_height
@@ -56,7 +56,7 @@ class slider ?default:(default = 50) pos update name = object(self)
   inherit setter pos name as super_set
 
   val slider_h = 2.
-  val slider_w = setting_width -. 30.
+  val slider_w = setting_width -. 150.
 
   val cursor_r = 7.
 
@@ -71,7 +71,8 @@ class slider ?default:(default = 50) pos update name = object(self)
       let position, size, origin =
       OgamlMath.Vector2f.(
         let (x,y) =
-          addf2D self#position ((setter_width -. setting_width) /. 2., 0.)
+          (* addf2D self#position ((setter_width -. setting_width) /. 2., 0.) *)
+          addf2D self#position (50., 0.)
         in
         { x ; y },
         { x = slider_w ; y = slider_h },
@@ -84,7 +85,8 @@ class slider ?default:(default = 50) pos update name = object(self)
     let offset = (slider_w /. 100.) *. (float_of_int (percentage - 50)) in
     let position =
       addf2D self#position
-             ((setter_width -. setting_width) /. 2. +. offset, 0.)
+             (* ((setter_width -. setting_width) /. 2. +. offset, 0.) *)
+             (50. +. offset, 0.)
     in
     let shape =
       let position, origin = OgamlMath.Vector2f.(
@@ -129,7 +131,8 @@ class toogle ?default:(default = false) pos name update = object(self)
     let color = Color.(`RGB RGB.(
       if toogle then { r = 0.22 ; g = 0.51 ; b = 0.8 ; a = 1.} else white
     ))
-    and position = addf2D (setter_width/.2. -. 20., 0.) self#position
+    (* and position = addf2D (setter_width/.2. -. 20., 0.) self#position *)
+    and position = addf2D (130., 0.) self#position
     and border_color =
       Color.(`RGB RGB.({r = 0.38 ; g = 0.67 ; b = 0.95 ; a = 1. }))
     and thickness = 2. in
