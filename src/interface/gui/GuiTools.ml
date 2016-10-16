@@ -14,40 +14,52 @@ let rec rect_print (type s) (module M : RenderTarget.T with type t = s)
   let character_size = to_pixels size in
   let interline_size = to_pixels interline in
 
-  () (* TODO But that seems like an annoying bit. *)
+  let text = ref (Text.create
+    ~text:string ~font ~color ~size:(character_size) ~bold:false
+    ~position:(OgamlMath.FloatRect.position rectangle) ()
+  ) in
+  let getstring = ref string in
+  let getposition = ref (OgamlMath.FloatRect.position rectangle) in
 
-  (* let text = new text
-    ~string
-    ~font
-    ~color
-    ~character_size
-  () in
+  let setstring string =
+    text := Text.create
+      ~text:string ~font ~color ~size:(character_size) ~bold:false
+      ~position:!getposition () ;
+    getstring := string
+  in
 
-  let text_bounds = text#get_global_bounds in
+  let setposition position =
+    text := Text.create
+      ~text:!getstring ~font ~color ~size:(character_size) ~bold:false
+      ~position:!getposition () ;
+    getposition := position
+  in
+
+  let text_bounds = Text.boundaries !text in
 
   try
 
     (* If we cannot draw it in height, we're done *)
-    if text_bounds.height > rectangle.height then raise Exit ;
+    if OgamlMath.FloatRect.(text_bounds.height > rectangle.height)
+    then raise Exit ;
 
     (* If the text is too long for a line *)
-    if text_bounds.width > rectangle.width then begin
+    if OgamlMath.FloatRect.(text_bounds.width > rectangle.width) then begin
 
       (* We compute the line to be drawn and draw the rest recursively *)
-      let words = Str.split (Str.regexp " ") text#get_string in
+      let words = Str.split (Str.regexp " ") !getstring in
 
       (* We clear the text object *)
-      text#set_string "";
+      setstring "" ;
 
       (* We create a function to check if s is too long *)
       (* Sets the text if not too long and if [reset] is false *)
       let set_too_long reset s =
-        let old_s = text#get_string in
-        text#set_string s;
-        let text_bounds = text#get_global_bounds in
-        let b = text_bounds.width > rectangle.width in
-        if (reset || b) then text#set_string old_s;
-        b
+        let old_s = !getstring in
+        setstring s ;
+        let text_bounds = Text.boundaries !text in
+        let b = OgamlMath.FloatRect.(text_bounds.width > rectangle.width) in
+        if (reset || b) then setstring old_s ; b
       in
       (* Pure comparison *)
       let toolong = set_too_long true in
@@ -57,7 +69,7 @@ let rec rect_print (type s) (module M : RenderTarget.T with type t = s)
         match strel with
         | [] -> ""
         | e :: r ->
-            let s = text#get_string in
+            let s = !getstring in
             if not (set_too_long false (s ^ sep ^ e)) then
               fit r sep
             else String.concat sep strel
@@ -79,32 +91,39 @@ let rec rect_print (type s) (module M : RenderTarget.T with type t = s)
 
       (* Dealing with the interline *)
       let delta = float_of_int (character_size + interline_size) in
-      let new_rect = {
-        left = rectangle.left ;
-        top = rectangle.top +. delta ;
+      let new_rect = OgamlMath.FloatRect.({
+        x = rectangle.x ;
+        y = rectangle.y +. delta ;
         width = rectangle.width ;
         height = rectangle.height -. delta
-      } in
+      }) in
 
       (* We are now ready to call the function recursively *)
-      rect_print target remaining font color size interline alignment new_rect
+      (* rect_print (module M) target remaining font color size interline alignment new_rect *)
+      () (* TODO *)
     end ;
 
     (* In case things were modified we recompute the bounds *)
-    let text_bounds = text#get_global_bounds in
+    let text_bounds = Text.boundaries !text in
 
     (* The line we're about to draw is aligned through offset *)
     let ox = match alignment with
-      | Center -> (rectangle.width -. text_bounds.width) /. 2.
+      | Center -> OgamlMath.FloatRect.(rectangle.width -. text_bounds.width)/.2.
       | Left   -> 0.
-      | Right  -> rectangle.width -. text_bounds.width
+      | Right  -> OgamlMath.FloatRect.(rectangle.width -. text_bounds.width)
     in
 
     (* Poor attempt at vertical centering *)
-    let oy = (float_of_int interline_size) -. text_bounds.height /. 4. in
+    let oy =
+      (float_of_int interline_size) -.
+      OgamlMath.FloatRect.(text_bounds.height) /. 4.
+    in
 
-    text#set_position (rectangle.left +. ox) (rectangle.top +. oy);
+    setposition OgamlMath.Vector2f.({
+      x = OgamlMath.FloatRect.(rectangle.x) +. ox ;
+      y = OgamlMath.FloatRect.(rectangle.y) +. oy
+    }) ;
 
-    target#draw text
+    Text.draw (module M) ~text:!text ~target ()
 
-  with Exit -> () *)
+  with Exit -> ()
