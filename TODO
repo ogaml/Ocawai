@@ -13,3 +13,4 @@
 ☐ Fix Xlib window size
 ☐ Quad drawing
 ☐ get_fullscreen
+☐ Vector2f/3f/etc...make : float -> float -> t

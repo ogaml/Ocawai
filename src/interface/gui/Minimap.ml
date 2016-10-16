@@ -1,4 +1,6 @@
 open OgamlGraphics
+open OgamlMath
+open OgamlUtils
 
 type mini_tile = Forest | Mountain | Plain | Water | Sand
 
@@ -143,15 +145,20 @@ class minimap def width height = object(self)
     self#compute_players players
 
   method private add_rectangle vao pos size color =
-    (* vao#append (mk_vertex ~position:pos ~color ());
-    vao#append (mk_vertex ~position:(Utils.addf2D pos (fst size, 0.)) ~color ());
-    vao#append (mk_vertex ~position:(Utils.addf2D pos size) ~color ());
-    vao#append (mk_vertex ~position:(Utils.addf2D pos (0., snd size)) ~color ()) *)
-    ()
-    (* TODO *)
+    let open VertexArray in
+    VertexSource.(
+      vao << (SimpleVertex.create ~position:(Vector3f.lift pos) ~color ())
+          << (SimpleVertex.create ~position:(Vector3f.lift Vector2f.(add pos {x = size.x; y = 0.})) ~color ())
+          << (SimpleVertex.create ~position:(Vector3f.lift Vector2f.(add pos size)) ~color ())
+          << (SimpleVertex.create ~position:(Vector3f.lift pos) ~color ())
+          << (SimpleVertex.create ~position:(Vector3f.lift Vector2f.(add pos size)) ~color ())
+          << (SimpleVertex.create ~position:(Vector3f.lift Vector2f.(add pos {x = 0.; y = size.y})) ~color ())
+    )
+    |> ignore
 
-  (* val vao = new vertex_array ~primitive_type:Quads [] *)
-  (* TODO *)
+  val vao_source = VertexArray.VertexSource.empty ()
+
+  val mutable program = None
 
   method draw : 'a. (module RenderTarget.T with type t = 'a) -> 'a ->
                 Cursor.cursor -> unit =
@@ -159,29 +166,36 @@ class minimap def width height = object(self)
         (target : s) cursor ->
     let foi = float_of_int in
     let ratio = 200. /. (foi def) in
-    (* self#add_rectangle vao (4.,4.) (208.,208.) (Color.rgb 200 200 200);
+    self#add_rectangle vao_source 
+      Vector2f.({x = 4.; y = 4.}) 
+      Vector2f.({x = 208.; y = 208.}) 
+      (`RGB Color.RGB.{r = 0.8; g = 0.8; b = 0.8; a = 1.0});
     for i = 0 to def - 1 do
       for j = 0 to def - 1 do
         let fill_color =
           match map.(i).(j) with
-          |Forest   -> Color.rgb   0 100   0
-          |Mountain -> Color.rgb  50 140   0
-          |Plain    -> Color.rgb  80 180  80
-          |Water    -> Color.rgb  50  50 220
-          |Sand     -> Color.rgb 240 240  96
+          |Forest   -> `RGB Color.RGB.({r = 0.; g = 0.4; b = 0.; a = 1.0}) 
+          |Mountain -> `RGB Color.RGB.({r = 0.2; g = 0.55; b = 0.; a = 1.0})
+          |Plain    -> `RGB Color.RGB.({r = 0.3; g = 0.75; b = 0.3; a = 1.0})
+          |Water    -> `RGB Color.RGB.({r = 0.2; g = 0.2; b = 0.9; a = 1.0})
+          |Sand     -> `RGB Color.RGB.({r = 0.95; g = 0.95; b = 0.4; a = 1.0})
         in
-        self#add_rectangle vao ((8.+.(foi i)*.ratio), (8.+.(foi j)*.ratio))
-          (ratio,ratio) fill_color;
+        self#add_rectangle vao_source 
+          Vector2f.({x = (8.+.(foi i)*.ratio); y = (8.+.(foi j)*.ratio)})
+          Vector2f.({x = ratio; y = ratio}) fill_color;
         match player_map.(i).(j) with
         |None -> ()
         |Some(p,t) ->
           let alpha = (sin (Unix.gettimeofday () *. 3.) +. 1.)/. 2. in
-          let alpha = int_of_float (100. *. alpha) + 50 in
+          let alpha = (100. *. alpha) +. 50. in
           if t = Unit then
-            self#add_rectangle vao ((8.+.(foi i)*.ratio), (8.+.(foi j)*.ratio))
-              (ratio,ratio) (Color.rgba 255 255 255 alpha);
-          self#add_rectangle vao ((9.+.(foi i)*.ratio), (9.+.(foi j)*.ratio))
-            (ratio-.2.,ratio-.2.) player_colors.(p);
+            self#add_rectangle vao_source 
+              Vector2f.({x = (8.+.(foi i)*.ratio); y = (8.+.(foi j)*.ratio)})
+              Vector2f.({x = ratio;y = ratio}) 
+              (`RGB Color.RGB.({r = 1.0; g = 1.0; b = 1.0; a = alpha /. 255.}));
+          self#add_rectangle vao_source 
+            Vector2f.({x = (9.+.(foi i)*.ratio); y = (9.+.(foi j)*.ratio)})
+            Vector2f.({x = (ratio-.2.); y =(ratio-.2.)}) player_colors.(p);
       done;
     done;
     let (px, py) = Position.topair cursor#position in
@@ -189,11 +203,42 @@ class minimap def width height = object(self)
       ((foi px) /. (foi (width  - 1))) *. (foi (def - 1)),
       ((foi py) /. (foi (height - 1))) *. (foi (def - 1)))
     in
-    self#add_rectangle vao ((8.+.(foi px')*.ratio), (8.+.(foi py')*.ratio))
-      (ratio, ratio) (Color.rgba 255 255 255 180);
-    target#draw vao;
-    vao#clear *)
-    (* TODO *)
-    ()
+    self#add_rectangle vao_source 
+      Vector2f.({x = (8.+.(foi px')*.ratio); y = (8.+.(foi py')*.ratio)})
+      Vector2f.({x = ratio; y = ratio}) 
+      (`RGB Color.RGB.({r = 1.0; g = 1.0; b = 1.0; a = 0.7}));
+    let vao = 
+      VertexArray.static (module M) target vao_source;
+    in
+    let program = 
+      begin match program with
+      | None   ->
+        Program.from_source_pp (module M) ~context:target
+          ~vertex_source:(`File "resources/glsl/minimap.vsh")
+          ~fragment_source:(`File "resources/glsl/minimap.fsh")
+          ~log:(OgamlUtils.Log.stdout)
+          ()
+      | Some p -> p
+      end
+    in
+    let parameters = 
+      DrawParameter.(make
+        ~culling:CullingMode.CullNone
+        ~blend_mode:BlendMode.alpha
+        ~depth_write:false
+        ~depth_test:DepthTest.None) ()
+    in
+    let uniform = 
+      Uniform.empty
+      |> Uniform.vector2f "trg_size" (Vector2f.from_int (M.size target))
+    in
+    VertexArray.draw (module M) 
+      ~target
+      ~vertices:vao
+      ~program
+      ~parameters
+      ~uniform
+      ();
+    VertexArray.VertexSource.clear vao_source
 
 end
