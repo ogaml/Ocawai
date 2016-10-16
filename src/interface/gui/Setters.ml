@@ -19,8 +19,10 @@ class virtual setter pos name = object(self)
   method draw (target : OgamlGraphics.Window.t) =
 
     let bg_color =
-      if self#holds_focus then Color.(`RGB RGB.{ r = 0.9 ; g = 0.9 ; b = 0.9 ; a = 1. })
-      else if has_focus then Color.(`RGB RGB.{ r = 0.9 ; g = 0.94 ; b = 0.95 ; a = 1. })
+      if self#holds_focus
+      then Color.(`RGB RGB.{ r = 0.9 ; g = 0.9 ; b = 0.9 ; a = 1. })
+      else if has_focus
+      then Color.(`RGB RGB.{ r = 0.9 ; g = 0.94 ; b = 0.95 ; a = 1. })
       else Color.(`RGB RGB.white)
     in
     let shape =

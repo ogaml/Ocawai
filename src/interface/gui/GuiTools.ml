@@ -13,25 +13,32 @@ let rect_print (type s) (module M : RenderTarget.T with type t = s)(target : s) 
     let character_size = to_pixels size in
     let interline_size = to_pixels interline in
 
+    let hx =
+      OgamlMath.Vector2f.({ x = 0. ; y = float_of_int character_size })
+    in
+
+    let getposition =
+      ref (OgamlMath.(Vector2f.add hx (FloatRect.position rectangle)))
+    in
     let text = ref (Text.create
       ~text:string ~font ~color ~size:(character_size) ~bold:false
-      ~position:(OgamlMath.FloatRect.position rectangle) ()
+      ~position:!getposition ()
     ) in
     let getstring = ref string in
-    let getposition = ref (OgamlMath.FloatRect.position rectangle) in
+
+    let update () =
+      text := Text.create
+        ~text:!getstring ~font ~color ~size:(character_size) ~bold:false
+        ~position:!getposition ()
+    in
 
     let setstring string =
-      text := Text.create
-        ~text:string ~font ~color ~size:(character_size) ~bold:false
-        ~position:!getposition () ;
-      getstring := string
+      getstring := string ; update ()
     in
 
     let setposition position =
-      text := Text.create
-        ~text:!getstring ~font ~color ~size:(character_size) ~bold:false
-        ~position:!getposition () ;
-      getposition := position
+      getposition := OgamlMath.Vector2f.add hx position ;
+      update ()
     in
 
     let text_bounds = Text.boundaries !text in
