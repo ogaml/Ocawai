@@ -28,7 +28,7 @@ class text_framed_item m_position m_size m_text
     ) in
     let shape =
       Shape.create_rectangle
-        ~position ~size ~color:(Color.(`RGB RGB.black))
+        ~position ~size ~color:(Color.(`RGB RGB.transparent))
         ~thickness:2. ~border_color:theme.Theme.border_color ()
     in
     Shape.draw (module Window) target shape () ;
