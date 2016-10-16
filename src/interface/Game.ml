@@ -23,11 +23,7 @@ let client_state = ref ClientPlayer.Idle
 let set_client_state s =
   client_state := s
 
-let event_state () =
-  !client_state
-
 let get_next_action () =
-  client_state := ClientPlayer.Waiting ;
   let rec get_aux () =
     match !client_state with
     | ClientPlayer.Received a -> client_state := ClientPlayer.Idle ; a
@@ -302,7 +298,7 @@ let new_game ?character () =
 
     (* Ingame menu items *)
     new item "cancel" "End turn" (fun () ->
-      if event_state () = ClientPlayer.Waiting then
+      if uphandle#current_turn = Updates.Your_turn then
         set_client_state (ClientPlayer.Received ([], Action.End_turn));
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
@@ -473,7 +469,7 @@ let new_game ?character () =
             |> ignore*)
 
         | KeyPressed { KeyEvent.key = Keycode.Space ; _ } when
-            event_state () = ClientPlayer.Waiting -> Cursor.(
+            uphandle#current_turn = Updates.Your_turn -> Cursor.(
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
               |Idle -> begin

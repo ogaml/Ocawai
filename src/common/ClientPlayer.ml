@@ -1,6 +1,6 @@
 open Player
 
-type action_state = Idle | Waiting | Received of Action.t
+type action_state = Idle | Received of Action.t
 
 
 class client_player ?(id) add_update get_next_action =

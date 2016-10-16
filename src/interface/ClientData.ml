@@ -42,7 +42,8 @@ class client_data = object(self)
     try Some (Queue.pop updates)
     with Queue.Empty -> None
 
-  method push_update u = Queue.push u updates
+  method push_update u = 
+    Queue.push u updates
 
   method top_update =
     try Some (Queue.top updates)
