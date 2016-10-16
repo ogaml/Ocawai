@@ -22,18 +22,23 @@ class text_framed_item m_position m_size m_text
 
   method draw target lib = if self#active then begin
     let position = foi2D self#position in
-    (* new rectangle_shape ~size:(foi2D size) ~position
-      ~fill_color:(Color.rgba 0 0 0 0) ~outline_thickness:2.
-      ~outline_color:theme.Theme.border_color ()
-    |> target#draw;
-    rect_print
-      target m_text my_font Color.black (Pix (snd size - 3)) (Pix 2) Center {
-        left = fst position ;
-        top = snd position ;
-        width = float_of_int (fst size) ;
-        height = float_of_int (snd size) } *)
-        ()
-        (* TODO *)
+    let position, size = OgamlMath.Vector2f.(
+      (let (x,y) = position in { x ; y }),
+      (let (x,y) = foi2D size in { x ; y })
+    ) in
+    let shape =
+      Shape.create_rectangle
+        ~position ~size ~color:(Color.(`RGB RGB.black))
+        ~thickness:2. ~border_color:theme.Theme.border_color ()
+    in
+    Shape.draw (module Window) target shape () ;
+    let x,y,width,height = OgamlMath.Vector2f.(
+      position.x, position.y, size.x, size.y
+    ) in
+    rect_print (module Window)
+      target m_text my_font (Color.(`RGB RGB.black))
+      (Pix ((int_of_float height) - 3))
+      (Pix 2) Center OgamlMath.FloatRect.({ x ; y ; width ; height })
   end
 
   method action = action ()
@@ -70,25 +75,35 @@ class ingame_popup ~m_position ~m_size ~m_theme ~m_text ~m_bar_height
 
     method draw target lib = if self#active then begin
       let active_widget = List.nth self#children self#selected in
-      (* new rectangle_shape ~fill_color:theme.Theme.default_color
-        ~size:(foi2D (fst size, snd size+m_bar_height-2))
-        ~position:(foi2D (fst self#position, snd self#position-m_bar_height+2))
-        ~outline_thickness:2. ~outline_color:theme.Theme.border_color ()
-      |> target#draw;
-      toolbar#draw target lib;
-      new rectangle_shape ~fill_color:(theme.Theme.highlight_color)
-        ~size:(foi2D active_widget#get_size)
-        ~position:(foi2D active_widget#position) ()
-      |> target#draw;
-      rect_print
-        target m_text my_font Color.black (Pix 18) (Pix 2) Center {
-        left = float_of_int (fst position) ;
-        top = float_of_int (snd position) ;
-        width = float_of_int (fst size) ;
-        height = float_of_int (snd size) };
-      List.iter (fun w -> w#draw target lib) self#children *)
-      ()
-      (* TODO *)
+      let shape =
+        let position, size = OgamlMath.Vector2f.(
+          (let (x,y) =
+            foi2D (fst self#position, snd self#position-m_bar_height+2)
+          in { x ; y }),
+          (let (x,y) = foi2D (fst size, snd size+m_bar_height-2) in { x ; y })
+        ) in
+        Shape.create_rectangle
+          ~position ~size ~color:theme.Theme.default_color
+          ~thickness:2. ~border_color:theme.Theme.border_color ()
+      in
+      Shape.draw (module Window) target shape () ;
+      toolbar#draw target lib ;
+      let position, size = OgamlMath.Vector2f.(
+        (let (x,y) = foi2D active_widget#position in { x ; y }),
+        (let (x,y) = foi2D active_widget#get_size in { x ; y })
+      ) in
+      let shape =
+        Shape.create_rectangle
+          ~position ~size ~color:theme.Theme.highlight_color ()
+      in
+      Shape.draw (module Window) target shape () ;
+      let x,y,width,height = OgamlMath.Vector2f.(
+        position.x, position.y, size.x, size.y
+      ) in
+      rect_print (module Window)
+        target m_text my_font (Color.(`RGB RGB.black)) (Pix 18) (Pix 2) Center
+        OgamlMath.FloatRect.({ x ; y ; width ; height }) ;
+      List.iter (fun w -> w#draw target lib) self#children
     end
 
   initializer
