@@ -88,15 +88,19 @@ class ingame_popup ~m_position ~m_size ~m_theme ~m_text ~m_bar_height
       in
       Shape.draw (module Window) target shape () ;
       toolbar#draw target lib ;
-      let position, size = OgamlMath.Vector2f.(
-        (let (x,y) = foi2D active_widget#position in { x ; y }),
-        (let (x,y) = foi2D active_widget#get_size in { x ; y })
-      ) in
       let shape =
+        let position, size = OgamlMath.Vector2f.(
+          (let (x,y) = foi2D active_widget#position in { x ; y }),
+          (let (x,y) = foi2D active_widget#get_size in { x ; y })
+        ) in
         Shape.create_rectangle
           ~position ~size ~color:theme.Theme.highlight_color ()
       in
       Shape.draw (module Window) target shape () ;
+      let position, size = OgamlMath.Vector2f.(
+        (let (x,y) = foi2D position in { x ; y }),
+        (let (x,y) = foi2D size in { x ; y })
+      ) in
       let x,y,width,height = OgamlMath.Vector2f.(
         position.x, position.y, size.x, size.y
       ) in
