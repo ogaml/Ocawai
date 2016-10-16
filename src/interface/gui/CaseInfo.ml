@@ -23,7 +23,9 @@ class case_info = object(self)
                 unit =
     fun (type s) (module M : RenderTarget.T with type t = s) (target : s)
         drawer tile_drawer damage foggy u chara building b_chara tile ->
-      (* let (w,h) = foi2D target#get_size in
+      let (w,h) = OgamlMath.(
+        Vector2f.(let v = from_int (M.size target) in v.x, v.y)
+      ) in
       let x = 10.
       and y = h -. 160. in
       let uh_offset = if u = None
@@ -37,48 +39,52 @@ class case_info = object(self)
       (* Damage estimation *)
       begin match damage with
       | Some (dmin,dmax) ->
-          new rectangle_shape
+          (* new rectangle_shape
             ~position:(x,y-.25.+.uh_offset+.bh_offset)
             ~size:(width,25.)
             ~fill_color:(Color.rgba 255 34 0 240)
             ()
-          |> target#draw;
-          rect_print target
+          |> target#draw; *)
+          rect_print (module M) target
             ("Estimated damage: "
             ^ (string_of_int dmin)
             ^ " - " ^ (string_of_int dmax))
-            font Color.white (Pix 15) (Pix 2) Left
-            { left = x+.3. ;
-              top = y-.25.+.uh_offset+.bh_offset+.2. ;
+            font Color.(`RGB RGB.white) (Pix 15) (Pix 2) Left
+            OgamlMath.FloatRect.({
+              x = x+.3. ;
+              y = y-.25.+.uh_offset+.bh_offset+.2. ;
               width = 214. ;
-              height = 25. }
+              height = 25.
+            })
       | None -> ()
       end ;
       (* Is the case foggy? *)
       if foggy then begin
-        new rectangle_shape
+        (* new rectangle_shape
           ~position:(x,y-.25.+.uh_offset+.bh_offset)
           ~size:(width,25.)
           ~fill_color:(Color.rgba 190 170 170 240)
           ()
-        |> target#draw ;
-        rect_print target
+        |> target#draw ; *)
+        rect_print (module M) target
           "Under the fog of war..."
-          font Color.white (Pix 15) (Pix 2) Left
-          { left = x+.3. ;
-            top = y-.25.+.uh_offset+.bh_offset+.2. ;
+          font Color.(`RGB RGB.white) (Pix 15) (Pix 2) Left
+          OgamlMath.FloatRect.({
+            x = x+.3. ;
+            y = y-.25.+.uh_offset+.bh_offset+.2. ;
             width = 214. ;
-            height = 25. }
+            height = 25.
+          })
       end ;
       (* Case information background *)
-      new rectangle_shape
+      (* new rectangle_shape
         ~position:(x,y+.uh_offset+.bh_offset)
         ~size:(width,height-.uh_offset-.bh_offset)
         ~fill_color:(Color.rgba 210 230 255 240)
         ()
-      |> target#draw ;
+      |> target#draw ; *)
       (* Unit information *)
-      begin match u with
+      (* begin match u with
       | Some u ->
           drawer (chara ^ "_" ^ u#name) (30.,h-.140.+.bh_offset) ;
           (* Name *)
@@ -114,9 +120,9 @@ class case_info = object(self)
             font (Color.rgb 77 77 77) (Pix 15) (Pix 2) Left
             { left=165. ; top=h-.125.+.bh_offset ; width=30. ; height=50. }
       | None -> ()
-      end ;
+      end ; *)
       (* Building information *)
-      begin match building with
+      (* begin match building with
       | Some b ->
           drawer (b_chara ^ "_" ^ b#name) (30.,h-.87.) ;
           (* Name *)
@@ -143,14 +149,15 @@ class case_info = object(self)
             Left
             { left = 37. ; top = h -. 70. ; width = 60. ; height = 50. }
       | None -> ()
-      end ;
+      end ; *)
       (* Tile information *)
       tile_drawer (Tile.get_name tile) (20.,h-.50.) ;
-      rect_print target (Tile.get_name tile) font (Color.rgb 66 66 66)
+      rect_print (module M) target (Tile.get_name tile) font
+        (Color.(`RGB RGB.({ r = 0.26 ; g = 0.26 ; b = 0.26 ; a = 1. })))
         (Pix 15) (Pix 2)
         Left
-        { left = 60. ; top = h -. 45. ; width = 170. ; height = 50. } *)
-  ()
-  (* TODO *)
+        OgamlMath.FloatRect.({
+          x = 60. ; y = h -. 45. ; width = 170. ; height = 50.
+        })
 
 end
