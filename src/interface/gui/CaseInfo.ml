@@ -39,12 +39,18 @@ class case_info = object(self)
       (* Damage estimation *)
       begin match damage with
       | Some (dmin,dmax) ->
-          (* new rectangle_shape
-            ~position:(x,y-.25.+.uh_offset+.bh_offset)
-            ~size:(width,25.)
-            ~fill_color:(Color.rgba 255 34 0 240)
-            ()
-          |> target#draw; *)
+          let shape =
+            let position, size = OgamlMath.Vector2f.(
+              { x ; y = y-.25.+.uh_offset+.bh_offset },
+              { x = width ; y = 25. }
+            ) in
+            Shape.create_rectangle
+              ~position ~size
+              ~color:Color.(
+                `RGB RGB.({ r = 1. ; g = 0.13 ; b = 0. ; a = 0.94 })
+              ) ()
+          in
+          Shape.draw (module M) target shape () ;
           rect_print (module M) target
             ("Estimated damage: "
             ^ (string_of_int dmin)
@@ -60,12 +66,18 @@ class case_info = object(self)
       end ;
       (* Is the case foggy? *)
       if foggy then begin
-        (* new rectangle_shape
-          ~position:(x,y-.25.+.uh_offset+.bh_offset)
-          ~size:(width,25.)
-          ~fill_color:(Color.rgba 190 170 170 240)
-          ()
-        |> target#draw ; *)
+        let shape =
+          let position, size = OgamlMath.Vector2f.(
+            { x ; y = y-.25.+.uh_offset+.bh_offset },
+            { x = width ; y = 25. }
+          ) in
+          Shape.create_rectangle
+            ~position ~size
+            ~color:Color.(
+              `RGB RGB.({ r = 0.75 ; g = 0.66 ; b = 0.66 ; a = 0.94 })
+            ) ()
+        in
+        Shape.draw (module M) target shape () ;
         rect_print (module M) target
           "Under the fog of war..."
           font Color.(`RGB RGB.white) (Pix 15) (Pix 2) Left
