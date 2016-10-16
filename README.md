@@ -5,9 +5,10 @@ Fork of one of our projects at ENS Cachan in 2014-2015.
 This is a port of the original game to rely entirely on the ogaml library
 instead of ocsfml and its many dependencies.
 
-#Install OCAWAI
+#Installing OCAWAI
 
-See `INSTALL.md` (TODO)
+You need to first install the ogaml library and atdgen.
+(TODO)
 
 
 # Playing OCAWAI
@@ -17,7 +18,7 @@ by pressing the *return key*.
 
 ## Commands
 
-* **ctrl+Q** ou **ctrl+C** : Quit the application (on macOS use **cmd**).
+* **ctrl+Q** or **ctrl+C** : Quit the application (on macOS use **cmd**).
 * **arrow keys** : Move the camera
 * **spacebar** : Actions (moves, menus)
 * **return** : Opens the menu (*forfeit* leads to the main menu)
