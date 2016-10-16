@@ -24,18 +24,11 @@ let manager =
 
   method window : OgamlGraphics.Window.t = window
 
-  method reset_window =
-    Window.destroy window;
-    let settings = 
-      ContextSettings.create
-        ~depth:0
-        ~fullscreen ()
-    in
-    window <- Window.create ~width:800 ~height:600 ~title:"OCAWAI" ~settings ()
-
   method set_fullscreen b =
-    fullscreen <- b ;
-    self#reset_window
+    if b <> fullscreen then begin
+      fullscreen <- b ;
+      Window.toggle_fullscreen window
+    end
 
   method push (state : State.state) =
     if self#is_running then self#current#paused ;
@@ -60,6 +53,8 @@ let manager =
           | KeyPressed { KeyEvent.key = Keycode.Q ; control = true ; _ }
           | KeyPressed { KeyEvent.key = Keycode.C ; control = true ; _ } ->
               Window.close window
+          | Resized _ ->
+              List.iter (fun s -> s#handle_event e) states
 
           | _ -> self#current#handle_event e
         end) ;

@@ -59,6 +59,8 @@ class state = object(self)
       match e with
         | KeyPressed { KeyEvent.key = kc ; _ } ->
             screen#handle_key kc
+        | Resized _ ->
+            self#set_screen (Window.size manager#window)
         | _ -> ()
     )
 
