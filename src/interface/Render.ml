@@ -89,6 +89,7 @@ let renderer = object(self)
         ?position 
         ?rotation
         ?scale 
+        ?color
         ?origin 
         ~subrect:texture_rect () 
     in
@@ -121,6 +122,7 @@ let renderer = object(self)
         ~origin 
         ?position 
         ?rotation 
+        ?color
         ~texture 
         ~scale 
         ()
