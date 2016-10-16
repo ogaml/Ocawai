@@ -79,20 +79,20 @@ class slider ?default:(default = 50) pos update name = object(self)
     in
     Shape.draw (module Window) target shape () ;
     (* Then we draw the cursor *)
-    (* let offset = (slider_w /. 100.) *. (float_of_int (percentage - 50)) in
+    let offset = (slider_w /. 100.) *. (float_of_int (percentage - 50)) in
     let position =
       addf2D self#position
-             ((setter_width -. setting_width) /. 2. +. offset, 0.) in
-    new circle_shape
-      ~fill_color: color
-      ~radius: cursor_r
-      ~origin: (cursor_r, cursor_r)
-      ~position
-      ~point_count: 100
-      ()
-    |> target#draw *)
-    ()
-    (* TODO *)
+             ((setter_width -. setting_width) /. 2. +. offset, 0.)
+    in
+    let shape =
+      let position, origin = OgamlMath.Vector2f.(
+        let (x,y) = position in { x ; y },
+        { x = cursor_r ; y = cursor_r }
+      ) in
+      Shape.create_regular
+        ~position ~radius:cursor_r ~amount:100 ~color ~origin ()
+    in
+    Shape.draw (module Window) target shape ()
 
   method private incr =
     percentage <- min (percentage + 1) 100
@@ -124,22 +124,23 @@ class toogle ?default:(default = false) pos name update = object(self)
 
   method draw (target : OgamlGraphics.Window.t) =
     super#draw target ;
-    (* let fill_color = if toogle then Color.rgb 57 131 204 else Color.white
+    let color = Color.(`RGB RGB.(
+      if toogle then { r = 0.22 ; g = 0.51 ; b = 0.8 ; a = 1.} else white
+    ))
     and position = addf2D (setter_width/.2. -. 20., 0.) self#position
-    and outline_color = Color.rgb 97 171 244
-    and outline_thickness = 2. in
-    new circle_shape
-    ~fill_color
-    ~radius: led_r
-    ~origin: (led_r, led_r)
-    ~position
-    ~point_count: 100
-    ~outline_color
-    ~outline_thickness
-    ()
-    |> target#draw *)
-    ()
-    (* TODO *)
+    and border_color =
+      Color.(`RGB RGB.({r = 0.38 ; g = 0.67 ; b = 0.95 ; a = 1. }))
+    and thickness = 2. in
+    let shape =
+      let position, origin = OgamlMath.Vector2f.(
+        let (x,y) = position in { x ; y },
+        { x = led_r ; y = led_r }
+      ) in
+      Shape.create_regular
+        ~position ~radius:led_r ~amount:100 ~color ~origin
+        ~border_color ~thickness ()
+    in
+    Shape.draw (module Window) target shape ()
 
   method action =
     toogle <- not toogle ;
