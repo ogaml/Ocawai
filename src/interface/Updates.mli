@@ -33,4 +33,6 @@ class handler : ClientData.client_data -> Camera.camera -> object
   (** Draws the end screen (when it is time) *)
   method end_screen : OgamlGraphics.Window.t -> unit
 
+  method game_end : bool
+
 end

@@ -347,6 +347,12 @@ class handler data camera = object(self)
 
   method current_turn = current_turn
 
+  method game_end = 
+    match current_state with
+    | Lost
+    | Won -> true
+    | _ -> false
+
   method burst_position =
     match current_animation with
     | Boom pos -> Some pos
@@ -368,7 +374,7 @@ class handler data camera = object(self)
       ignore size;
       ignore color;
       GuiTools.(rect_print
-        (module Window) target text font color (Pix size) (Pix 10) Center rect) 
+        (module Window) target text font color (Pix 130) (Pix 10) Center rect) 
     in
     match current_animation with
     | End_win -> fade false "You win!"

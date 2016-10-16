@@ -567,7 +567,8 @@ let new_game ?character () =
 
   method render window =
 
-    m_engine#run;
+    if not (uphandle#game_end) then
+      m_engine#run;
     self#keyboard_events;
     Interpolators.update () ;
     Window.clear window;
