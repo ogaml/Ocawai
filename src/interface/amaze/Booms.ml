@@ -101,7 +101,7 @@ let continuous_flower (manager : particle_manager) base =
   in
   continuous_circle manager center (`RGB OgamlGraphics.Color.RGB.({r = 0.95; g = 0.95; b = 0.1; a = 1.0})) 15;
   List.iter 
-    (fun p -> continuous_circle manager p (`RGB OgamlGraphics.Color.RGB.green) 5)
+    (fun p -> continuous_circle manager p (`RGB OgamlGraphics.Color.RGB.red) 5)
     petal_centers;
-  continuous_fountain manager base (-.pi/.2.) 0.10 (`RGB OgamlGraphics.Color.RGB.red)
+  continuous_fountain manager base (-.pi/.2.) 0.10 (`RGB OgamlGraphics.Color.RGB.green)
 

@@ -44,8 +44,7 @@ class base_particle ~position ~rotation ~speed
         ~scale:Vector2f.({x = scale; y = 1.})
         ~rotation
         ~texture:rect_tex
-        (* TODO *)
-(*         ~color *)
+        ~color
         ~origin:Vector2f.({x = fst o; y = snd o}) ()
     in
     Sprite.draw (module Framebuffer) ~target ~sprite ()
