@@ -29,9 +29,8 @@ class state = object(self)
 
   val mutable run = ref true
 
-  (* TODO *)
-  (*val mutable particles = 
-    new ParticleManager.particle_manager manager#window*)
+  val mutable particles = 
+    new ParticleManager.particle_manager manager#window
 
   method handle_event e =
     Event.(
@@ -86,14 +85,12 @@ class state = object(self)
 
   method render window =
 
-(* TODO *)
-(*     particles#update; *)
+    particles#update;
 
     let color = Color.RGB.({r = 0.05; g = 0.05; b = 0.05; a = 1.0}) in 
     Window.clear window ~color:(Some (`RGB color));
 
-(* TODO *)
-(*     particles#render; *)
+    particles#render;
 
     let (sx,sy) = 
       Window.size window
@@ -101,8 +98,7 @@ class state = object(self)
       |> (fun v -> Vector2f.(v.x, v.y))
     in
 
-    (* TODO *)
-    (*if Random.int 90 <= 1 && not finished then begin
+    if Random.int 90 <= 2 && not finished then begin
       let position = (Random.float sx, Random.float (sy /. 2.5)) in
       Booms.boom_circle particles
         (Random.float 200. +. 700.)
@@ -111,14 +107,14 @@ class state = object(self)
         100
     end;
 
-    let yellow = OcsfmlGraphics.Color.rgb 220 220 20 in
+    let yellow = `RGB OgamlGraphics.Color.RGB.({r = 0.9; g = 0.9; b = 0.1; a = 1.0}) in
 
     Booms.continuous_fountain particles (0., sy) (-1.) 0.25 yellow;
 
     Booms.continuous_fountain particles (sx, sy) (4.141592) 0.25 yellow;
 
     if finished then 
-      Booms.continuous_flower particles (sx /. 2., sy);*)
+      Booms.continuous_flower particles (sx /. 2., sy);
 
     let height = self#credits [
       OCAWAI ;

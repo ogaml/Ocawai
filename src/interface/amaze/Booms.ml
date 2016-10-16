@@ -3,8 +3,9 @@ open ParticleMixins
 
 let rec random_color () = 
   let (a,b,c) = (Random.int 2, Random.int 2, Random.int 2) in
+  let f = float_of_int in
   if a = 0 && b = 0 && c = 0 then random_color ()
-  else OcsfmlGraphics.Color.rgb (a * 255) (b * 255) (c * 255)
+  else `RGB OgamlGraphics.Color.RGB.({r = f a; g = f b; b = f c; a = 1.0})
 
 
 class circle_particle ~maxspeed ~position ~color = 
@@ -27,8 +28,9 @@ class circle_particle ~maxspeed ~position ~color =
 
 end
 
-let buf = new OcsfmlAudio.sound_buffer (`File("./resources/sounds/explosion-01.wav"))
-let sound = new OcsfmlAudio.sound ~buffer:buf ()
+(* TODO *)
+(*let buf = new OcsfmlAudio.sound_buffer (`File("./resources/sounds/explosion-01.wav"))
+let sound = new OcsfmlAudio.sound ~buffer:buf ()*)
 
 let rec boom_circle (manager : particle_manager) maxspeed position color = function
   |0 -> ()
@@ -36,7 +38,8 @@ let rec boom_circle (manager : particle_manager) maxspeed position color = funct
     let p = new circle_particle ~maxspeed ~position ~color in
     manager#add_particle p;
     (*sound#play;*)
-    Sounds.play_sound "explosion-01";
+    (* TODO *)
+(*     Sounds.play_sound "explosion-01"; *)
     boom_circle manager maxspeed position color (n-1)
     
 
@@ -96,9 +99,9 @@ let continuous_flower (manager : particle_manager) base =
     new_center (6. *. pi /. 5.);
     new_center (8. *. pi /. 5.)]
   in
-  continuous_circle manager center (OcsfmlGraphics.Color.rgb 240 240 20) 15;
+  continuous_circle manager center (`RGB OgamlGraphics.Color.RGB.({r = 0.95; g = 0.95; b = 0.1; a = 1.0})) 15;
   List.iter 
-    (fun p -> continuous_circle manager p (OcsfmlGraphics.Color.rgb 255 0 0) 5)
+    (fun p -> continuous_circle manager p (`RGB OgamlGraphics.Color.RGB.green) 5)
     petal_centers;
-  continuous_fountain manager base (-.pi/.2.) 0.10 (OcsfmlGraphics.Color.rgb 0 255 0)
+  continuous_fountain manager base (-.pi/.2.) 0.10 (`RGB OgamlGraphics.Color.RGB.red)
 
