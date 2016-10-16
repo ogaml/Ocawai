@@ -62,7 +62,7 @@ end
 
 class virtual prop_life_alpha coeff = object(self)
 
-  val virtual mutable color : OcsfmlGraphics.Color.t
+  val virtual mutable color : OgamlGraphics.Color.t
 
   method virtual life_ratio : float
 
@@ -71,8 +71,9 @@ class virtual prop_life_alpha coeff = object(self)
   initializer
     self#add_update (fun dt ->
       let value = 1. -. self#life_ratio in
-      let alpha = int_of_float ((min 1. (coeff *. value)) *. 255.) in
-      color <- OcsfmlGraphics.Color.(rgba color.r color.g color.b alpha)
+      let alpha = (min 1. (coeff *. value)) in
+      let rgb = OgamlGraphics.Color.rgb color in
+      color <- `RGB OgamlGraphics.Color.RGB.({r = rgb.r; g = rgb.g; b = rgb.b; a = alpha})
     )
 end
 

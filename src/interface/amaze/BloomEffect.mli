@@ -1,7 +1,7 @@
-open OcsfmlGraphics
+open OgamlGraphics
 
 type t
 
 val create : (int * int) -> t
 
-val blooming : t -> render_texture -> #render_target -> unit
+val blooming : (module RenderTarget.T with type t = 'a) -> t -> Window.t -> 'a -> unit

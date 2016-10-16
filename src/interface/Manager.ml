@@ -30,6 +30,8 @@ let manager =
       Window.toggle_fullscreen window
     end
 
+  method fullscreen = fullscreen
+
   method push (state : State.state) =
     if self#is_running then self#current#paused ;
     states <- state :: states

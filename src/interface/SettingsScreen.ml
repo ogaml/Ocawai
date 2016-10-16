@@ -47,7 +47,7 @@ class state = object(self)
             "Music volume" :> Home.actionnable) ;*)
         (new Setters.toogle (w /. 2., 150. +. 4. *. Setters.setter_height)
           "Fullscreen"
-          ~default: true
+          ~default:manager#fullscreen
           manager#set_fullscreen :> Home.actionnable) ;
         new Home.textured_actionnable "back" "back_hover" (200., h -. 100.)
           (fun () -> manager#pop) ;

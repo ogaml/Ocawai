@@ -1,6 +1,6 @@
-open OcsfmlGraphics
+open OgamlGraphics
 
-type t = {textures : render_texture array; size : (int * int)}
+type t = {textures : Framebuffer.t array; size : (int * int)}
 
 let blur_shader = new shader 
   ~vertex:(ShaderSource.file "src/interface/amaze/bloom.vert")

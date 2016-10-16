@@ -1,12 +1,13 @@
-open OcsfmlGraphics
+open OgamlGraphics
+open OgamlMath
 
 class base_particle ~position ~rotation ~speed 
   ~scale ~color ~life = object(self)
 
-  val mutable position = position
+  val mutable position : (float * float) = position
   val mutable rotation = rotation
-  val mutable speed    = speed
-  val mutable scale    = scale
+  val mutable speed    : (float * float) = speed
+  val mutable scale    : float = scale
   val mutable color    = color
   val mutable updates  = []
 
@@ -35,12 +36,18 @@ class base_particle ~position ~rotation ~speed
 
   method is_alive = not dead
 
-  method render (rect_tex : texture) (target : render_texture) = 
-    new sprite ~position ~scale:(scale,1.) 
-      ~rotation:(rotation *. 180. /. 3.141592)
-      ~texture:rect_tex
-      ~color ~origin:self#origin ()
-    |> target#draw ~blend_mode:BlendAdd
+  method render (rect_tex : Texture.Texture2D.t) (target : Framebuffer.t) = 
+    let o = self#origin in
+    let sprite = 
+      Sprite.create 
+        ~position:Vector2f.({x = fst position; y = snd position})
+        ~scale:Vector2f.({x = scale; y = 1.})
+        ~rotation
+        ~texture:rect_tex
+        ~color
+        ~origin:Vector2f.({x = fst o; y = snd o}) ()
+    in
+    Sprite.draw (module Framebuffer) ~target ~sprite
 end
 
 

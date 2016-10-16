@@ -11,6 +11,8 @@ val manager : <
   run : unit ;
   (** @Return the current window *)
   window : OgamlGraphics.Window.t;
+  (** Returns the fullscreen mode *)
+  fullscreen : bool;
   (** Toogles fullscreen mode *)
   set_fullscreen : bool -> unit ;
   (** @Return the state on top of the stack *)
