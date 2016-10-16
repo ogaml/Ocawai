@@ -24,18 +24,22 @@ class item ?enabled:(enabled = true) icon text (action : unit -> unit) =
     in
     let position = foi2D self#position in
     let (selfx, selfy) = foi2D size in
-    (* Render.renderer#draw_txr target icon ~position:position
-      ~size:(selfy, selfy) ~centered:false ~color ();
+    let position,size = OgamlMath.Vector2f.(
+      (let (x,y) = position in { x ; y }),
+      { x = selfy ; y = selfy }
+    ) in
+    Render.renderer#draw_txr
+      target icon ~position ~size ~centered:false ~color ();
     (* Then draw the text *)
-    rect_print
+    let x,y,width,height = OgamlMath.Vector2f.(
+      position.x +. selfy, position.y, selfx -. selfy, selfy
+    ) in
+    rect_print (module Window)
       target text my_font
-        (if enabled then Color.black else Color.rgba 0 0 0 127)
-        (Pix (snd size - 3)) (Pix 2) Left {
-        left = fst position +. selfy ;
-        top = snd position ;
-        width = selfx -. selfy ;
-        height = selfy } *)
-    () (* TODO *)
+        (if enabled then (Color.(`RGB RGB.black))
+         else Color.(`RGB RGB.({ r = 0. ; g = 0. ; b = 0. ; a = 0.5 })))
+        (Pix (int_of_float selfy - 3)) (Pix 2) Left
+        OgamlMath.FloatRect.({ x ; y ; width ; height })
   end
 
   method action = if enabled then action ()
@@ -67,24 +71,32 @@ class key_button ~icon ~text ~m_position ~m_size ~keycode
   method set_callback c = callback <- c
 
   method draw target lib = if self#active then begin
-    (* new rectangle_shape ~fill_color:theme.Theme.default_color
-      ~size:(foi2D size) ~position:(foi2D self#position)
-      ~outline_color:theme.Theme.border_color
-      ~outline_thickness:2. ()
-    |> target#draw;
+    let shape =
+      let position, size = OgamlMath.Vector2f.(
+        (let (x,y) = foi2D self#position in {x;y}),
+        (let (x,y) = foi2D size in {x;y})
+      ) in
+      Shape.create_rectangle
+        ~position ~size ~color:theme.Theme.default_color
+        ~border_color:theme.Theme.border_color ~thickness:2. ()
+    in
+    Shape.draw (module Window) target shape () ;
 
     let (selfx, selfy) = foi2D size in
     let position = foi2D self#position in
-    Render.renderer#draw_txr target icon ~position ~size:(selfy, selfy)
-      ~centered:false ();
+    let vpos = let (x,y) = position in OgamlMath.Vector2f.({x;y}) in
+    let vsize = OgamlMath.Vector2f.({ x = selfy ; y = selfy }) in
+    Render.renderer#draw_txr
+      target icon ~position:vpos ~size:vsize ~centered:false () ;
 
-    rect_print
-      target text my_font Color.black (Pix (snd size - 1)) (Pix 2) Center {
-        left = fst position +. selfy ;
-        top = snd position ;
+    let x,y = position in
+    rect_print (module Window)
+      target text my_font (Color.(`RGB RGB.black)) (Pix (snd size - 1)) (Pix 2)
+      Center OgamlMath.FloatRect.({
+        x = x +. selfy ;
+        y = y ;
         width = selfx -. selfy ;
-        height = selfy } *)
-        () (* TODO *)
+        height = selfy })
   end
 
 end
@@ -121,19 +133,30 @@ class ingame_menu ?escape ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_he
   method set_escape (esc : unit -> unit) = escape <- Some esc
 
   method draw target lib = if self#active then begin
-    (* new rectangle_shape ~fill_color:theme.Theme.default_color
-      ~size:(foi2D (fst size, snd size+m_bar_height-2))
-      ~position:(foi2D (fst self#position, snd self#position-m_bar_height+2))
-      ~outline_thickness:2. ~outline_color:theme.Theme.border_color ()
-    |> target#draw;
-    toolbar#draw target lib;
+    let shape =
+      let position, size = OgamlMath.Vector2f.(
+        (let (x,y) =
+          foi2D (fst self#position, snd self#position-m_bar_height+2)
+        in {x;y}),
+        (let (x,y) = foi2D (fst size, snd size+m_bar_height-2) in {x;y})
+      ) in
+      Shape.create_rectangle
+        ~position ~size ~color:theme.Theme.default_color
+        ~thickness:2. ~border_color:theme.Theme.border_color ()
+    in
+    Shape.draw (module Window) target shape () ;
+    toolbar#draw target lib ;
     let (posx, posy) = self#position in
-    new rectangle_shape ~fill_color:(theme.Theme.highlight_color)
-      ~size:(foi2D (m_width, item_height))
-      ~position:(foi2D (posx, posy + self#selected * item_height)) ()
-    |> target#draw;
-    List.iter (fun w -> w#draw target lib) self#children *)
-    () (* TODO *)
+    let shape =
+      let position, size = OgamlMath.Vector2f.(
+        (let (x,y) = foi2D (posx, posy + self#selected * item_height) in {x;y}),
+        (let (x,y) = foi2D (m_width, item_height) in {x;y})
+      ) in
+      Shape.create_rectangle
+        ~position ~size ~color:theme.Theme.highlight_color ()
+    in
+    Shape.draw (module Window) target shape () ;
+    List.iter (fun w -> w#draw target lib) self#children
   end
 
   method add_child w =
