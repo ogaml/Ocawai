@@ -12,7 +12,7 @@ type t =
     blur_program : Program.t;
     filter_program : Program.t;
     additive_program : Program.t;
-    fullrect : VertexArray.SimpleVertex.T.s VertexArray.VertexSource.t;
+    fullrect : VertexArray.SimpleVertex.T.s VertexArray.Source.t;
   }
 
 let create (type s) (module M : RenderTarget.T with type t = s) ctx size = 
@@ -40,7 +40,7 @@ let create (type s) (module M : RenderTarget.T with type t = s) ctx size =
       ~fragment_source:(`File "resources/glsl/add.fsh") ()
   in
   let fullrect =
-    VertexArray.(VertexSource.(
+    VertexArray.(Source.(
       empty ~size:6 () 
         << SimpleVertex.create 
           ~position:Vector3f.({x = -1.0; y = -1.0; z = 0.0})
@@ -73,7 +73,8 @@ let create (type s) (module M : RenderTarget.T with type t = s) ctx size =
 let filter (type s) (module M : RenderTarget.T with type t = s) ctx 
   (sys:t) (source : Texture.Texture2D.t) = 
   Framebuffer.clear sys.fbo1;
-  let vao = VertexArray.static (module M) ctx sys.fullrect in
+  let vbo = VertexArray.Buffer.static (module M) ctx sys.fullrect in
+  let vao = VertexArray.create (module M) ctx [VertexArray.Buffer.unpack vbo] in
   let parameters = 
     DrawParameter.(make
       ~culling:CullingMode.CullNone
@@ -96,7 +97,8 @@ let filter (type s) (module M : RenderTarget.T with type t = s) ctx
 
 let blur (type s) (module M : RenderTarget.T with type t = s) ctx (sys:t) radius =
   Framebuffer.clear sys.fbo2;
-  let vao = VertexArray.static (module M) ctx sys.fullrect in
+  let vbo = VertexArray.Buffer.static (module M) ctx sys.fullrect in
+  let vao = VertexArray.create (module M) ctx [VertexArray.Buffer.unpack vbo] in
   let parameters = 
     DrawParameter.(make
       ~culling:CullingMode.CullNone
@@ -137,7 +139,8 @@ let blur (type s) (module M : RenderTarget.T with type t = s) ctx (sys:t) radius
 
 let add (type s) (module M : RenderTarget.T with type t = s) (ctx:s)
         (sys:t) (source : Texture.Texture2D.t) (target:s) =
-  let vao = VertexArray.static (module M) ctx sys.fullrect in
+  let vbo = VertexArray.Buffer.static (module M) ctx sys.fullrect in
+  let vao = VertexArray.create (module M) ctx [VertexArray.Buffer.unpack vbo] in
   let parameters = 
     DrawParameter.(make
       ~culling:CullingMode.CullNone

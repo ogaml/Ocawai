@@ -146,7 +146,7 @@ class minimap def width height = object(self)
 
   method private add_rectangle vao pos size color =
     let open VertexArray in
-    VertexSource.(
+    Source.(
       vao << (SimpleVertex.create ~position:(Vector3f.lift pos) ~color ())
           << (SimpleVertex.create ~position:(Vector3f.lift Vector2f.(add pos {x = size.x; y = 0.})) ~color ())
           << (SimpleVertex.create ~position:(Vector3f.lift Vector2f.(add pos size)) ~color ())
@@ -156,7 +156,7 @@ class minimap def width height = object(self)
     )
     |> ignore
 
-  val vao_source = VertexArray.VertexSource.empty ()
+  val vao_source = VertexArray.Source.empty ()
 
   val mutable program = None
 
@@ -207,8 +207,11 @@ class minimap def width height = object(self)
       Vector2f.({x = (8.+.(foi px')*.ratio); y = (8.+.(foi py')*.ratio)})
       Vector2f.({x = ratio; y = ratio}) 
       (`RGB Color.RGB.({r = 1.0; g = 1.0; b = 1.0; a = 0.7}));
+    let vbo = 
+      VertexArray.Buffer.static (module M) target vao_source
+    in
     let vao = 
-      VertexArray.static (module M) target vao_source;
+      VertexArray.create (module M) target [VertexArray.Buffer.unpack vbo]
     in
     let program = 
       begin match program with
@@ -239,6 +242,6 @@ class minimap def width height = object(self)
       ~parameters
       ~uniform
       ();
-    VertexArray.VertexSource.clear vao_source
+    VertexArray.Source.clear vao_source
 
 end

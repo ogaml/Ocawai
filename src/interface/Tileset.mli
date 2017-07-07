@@ -23,6 +23,6 @@ class tileset : OgamlGraphics.Texture.Texture2D.t -> string -> object
   (** Returns the source associated to the tileset *)
   method source : 
     OgamlGraphics.VertexArray.SimpleVertex.T.s 
-    OgamlGraphics.VertexArray.VertexSource.t
+    OgamlGraphics.VertexArray.Source.t
 
 end

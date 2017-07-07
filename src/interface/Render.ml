@@ -12,7 +12,7 @@ let renderer = object(self)
 
   val font = Font.load (Utils.base_path () ^ "fonts/FreeSansBold.ttf")
 
-  val mutable rect_source = VertexArray.VertexSource.empty () 
+  val mutable rect_source = VertexArray.Source.empty () 
 
   val mutable program = Obj.magic ()
 
@@ -51,7 +51,7 @@ let renderer = object(self)
     let real_end = Vector2f.prop tex_size scale in
     let texture_rect = set#texture_rect tilename in
     let open VertexArray in
-    let open VertexSource in
+    let open Source in
     source
     << (SimpleVertex.create
       ~position:(Vector3f.lift real_pos)
@@ -259,8 +259,11 @@ let renderer = object(self)
         ~blend_mode:BlendMode.alpha ()
       )
     in
+    let vbo =
+      VertexArray.Buffer.static (module Window) target tileset#source
+    in
     let vao = 
-      VertexArray.static (module Window) target tileset#source
+      VertexArray.create (module Window) target [VertexArray.Buffer.unpack vbo]
     in
     let uniform =
       Uniform.empty
@@ -275,9 +278,12 @@ let renderer = object(self)
       ~parameters
       ~uniform 
       ~mode:DrawMode.Triangles ();
-    VertexArray.VertexSource.clear tileset#source;
+    VertexArray.Source.clear tileset#source;
+    let vbo = 
+      VertexArray.Buffer.static (module Window) target jointset#source
+    in
     let vao = 
-      VertexArray.static (module Window) target jointset#source
+      VertexArray.create (module Window) target [VertexArray.Buffer.unpack vbo]
     in
     let uniform =
       Uniform.empty
@@ -292,7 +298,7 @@ let renderer = object(self)
       ~parameters
       ~uniform
       ~mode:DrawMode.Triangles ();
-    VertexArray.VertexSource.clear jointset#source
+    VertexArray.Source.clear jointset#source
 
   (* Render a path with arrows *)
   method private draw_path (target : Window.t)

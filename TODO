@@ -1,16 +1,16 @@
 
-☐ Framerate limit
+✔ Framerate limit @done(2016-11-20 12:34) @project
 ☐ Keyrepeat
 ☐ Fonts exceptions
 ☐ Window creation exceptions
 ☐ Fullscreen support check
-☐ Clock
-☐ Piecewise operations on vectors
+✔ Clock @done(2016-11-20 11:51) @project
+✔ Piecewise operations on vectors @done(2016-11-20 12:47) @project
 ✔ Sprite color @done(2016-10-16 13:01) @project
-☐ Text bold default to false
+✔ Text bold default to false @done(2016-11-20 12:37) @project
 ☐ Screenshot ?
-☐ Faster color creation
+✔ Faster color creation @done(2016-11-20 11:57) @project
 ☐ Fix Xlib window size
 ☐ Quad drawing
 ☐ get_fullscreen
-☐ Vector2f/3f/etc...make : float -> float -> t
+✔ Vector2f/3f/etc...make : float -> float -> t @done(2016-11-20 12:39) @project
